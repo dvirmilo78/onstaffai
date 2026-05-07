@@ -580,3 +580,53 @@ def get_connections(company: str):
                 "expires_at": t.get("expires_at",0),
             }
     return {"company": company, "connections": result}
+
+
+# ── OAuth Success Page (for file:// hosted frontends) ─────────────────────────
+@app.get("/oauth-success")
+async def oauth_success_page(request: Request):
+    """Simple page that communicates OAuth success back to opener window"""
+    params = dict(request.query_params)
+    auth_success = params.get("auth_success", "")
+    company      = params.get("company", "")
+    email        = params.get("email", "")
+
+    html = f"""<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head><meta charset="UTF-8"><title>חיבור הצליח</title>
+<style>
+  body{{font-family:system-ui,sans-serif;display:flex;align-items:center;justify-content:center;
+        min-height:100vh;margin:0;background:#f0fdf4;}}
+  .box{{background:#fff;border-radius:14px;padding:32px;text-align:center;
+         box-shadow:0 4px 24px rgba(0,0,0,.1);max-width:400px;}}
+  .icon{{font-size:48px;margin-bottom:12px;}}
+  h2{{color:#059669;margin:0 0 8px;}}
+  p{{color:#6b7280;margin:0 0 20px;}}
+  button{{background:#059669;color:#fff;border:none;border-radius:8px;
+           padding:10px 24px;font-size:14px;font-weight:600;cursor:pointer;}}
+</style>
+</head>
+<body>
+<div class="box">
+  <div class="icon">✅</div>
+  <h2>החיבור הצליח!</h2>
+  <p>{auth_success} חובר בהצלחה{' — ' + email if email else ''}</p>
+  <button onclick="window.close()">סגור חלון</button>
+</div>
+<script>
+  // Notify parent window
+  if (window.opener) {{
+    window.opener.postMessage({{
+      type: 'oauth_success',
+      service: '{auth_success}',
+      company: '{company}',
+      email:   '{email}',
+    }}, '*');
+  }}
+  // Auto-close after 2 seconds
+  setTimeout(() => window.close(), 2000);
+</script>
+</body>
+</html>"""
+    from fastapi.responses import HTMLResponse
+    return HTMLResponse(html)
