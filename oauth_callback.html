@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-H73PEQ49ZT"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-H73PEQ49ZT');
+</script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OnStaffAI — OAuth Callback</title>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { font-family:'Heebo',sans-serif; background:#fafaf7; display:flex; align-items:center; justify-content:center; min-height:100vh; }
+    .card { background:#fff; border:1px solid #e6e1d6; border-radius:20px; padding:40px 48px; text-align:center; box-shadow:0 8px 32px rgba(0,0,0,0.08); max-width:420px; width:90%; }
+    .icon { font-size:56px; margin-bottom:16px; }
+    h2 { font-size:22px; font-weight:700; color:#111; margin-bottom:8px; }
+    p  { font-size:15px; color:#78746b; margin-bottom:24px; }
+    .spinner { display:inline-block; width:36px; height:36px; border:3px solid #e6e1d6; border-top-color:#ea580c; border-radius:50%; animation:spin 0.8s linear infinite; margin:16px auto; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+  </style>
+</head>
+<body>
+<div class="card" id="card">
+  <div class="spinner" id="spinner"></div>
+  <h2 id="title">מעבד את החיבור...</h2>
+  <p id="subtitle">אנא המתן — מקבל אישור מ-Google</p>
+</div>
+
+<script>
+(function() {
+  // Parse hash params (implicit flow) or query params (code flow)
+  function parseParams(str) {
+    return Object.fromEntries(str.replace(/^[?#]/, '').split('&').map(p => p.split('=')).map(([k, v]) => [k, decodeURIComponent(v || '')]));
+  }
+
+  const hashParams  = parseParams(window.location.hash);
+  const queryParams = parseParams(window.location.search);
+  const params = Object.assign({}, queryParams, hashParams);
+
+  const state    = params.state    || '';
+  const error    = params.error    || '';
+  const token    = params.access_token || '';
+  const code     = params.code     || '';
+  const scope    = params.scope    || '';
+
+  function finish(success, data) {
+    const card  = document.getElementById('card');
+    const icon  = document.createElement('div');
+    icon.className = 'icon';
+    icon.textContent = success ? '✅' : '❌';
+    card.prepend(icon);
+    document.getElementById('spinner').style.display = 'none';
+    document.getElementById('title').textContent    = success ? 'החיבור הצליח!' : 'החיבור נכשל';
+    document.getElementById('subtitle').textContent = success
+      ? 'החלון ייסגר אוטומטית תוך שנייה...'
+      : (error === 'access_denied' ? 'הגישה נדחתה על ידי המשתמש.' : 'שגיאה: ' + (error || 'לא ידוע'));
+
+    // Post message to opener
+    if (window.opener && !window.opener.closed) {
+      window.opener.postMessage({
+        type:    'OAUTH_CALLBACK',
+        success: success,
+        provider: state.split(':')[0] || 'google',
+        scope:   scope,
+        token:   token,
+        code:    code,
+        error:   error
+      }, window.location.origin);
+    }
+
+    if (success) {
+      setTimeout(() => window.close(), 1400);
+    }
+  }
+
+  if (error) {
+    finish(false, { error });
+  } else if (token || code) {
+    finish(true, { token, code, scope });
+  } else {
+    // No params — might be direct open, just close
+    document.getElementById('title').textContent    = 'עמוד callback';
+    document.getElementById('subtitle').textContent = 'עמוד זה משמש לטיפול בחיבורי OAuth.';
+    document.getElementById('spinner').style.display = 'none';
+  }
+})();
+</script>
+</body>
+</html>

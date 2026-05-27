@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-H73PEQ49ZT"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-H73PEQ49ZT');
+</script>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico?v=2">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon.png?v=2">
+  <link rel="apple-touch-icon" href="/assets/favicon.png?v=2">
+      <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AgentFlow - סוכני בינה מלאכותית (AI) לעסקים קטנים ובינוניים לחסכון בעלויות והגדלת ביצועים.">
+    <title>AgentFlow | הפתרון היוקרתי של סוכני AI לעסק שלך</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .agent-pill {
+            padding: 7px 16px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.15);
+            background: transparent;
+            color: rgba(255,255,255,0.65);
+            font-size: 0.82rem;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .agent-pill:hover   { border-color: #ea580c; color: #ea580c; }
+        .agent-pill.selected { border-color: #ea580c; background: rgba(234,88,12,0.15); color: #fff; }
+        ::placeholder { color: rgba(255,255,255,0.3); }
+    </style>
+</head>
+<body>
+    <div class="noise-overlay"></div>
+    <div class="orb-1"></div>
+    <div class="orb-2"></div>
+
+    <nav class="navbar">
+        <div class="container nav-container">
+            <div class="logo">
+                <img src="assets/agentflow_logo_1776605230557.png" alt="AgentFlow" class="logo-img">
+            </div>
+            <ul class="nav-links">
+                <li><a href="#services">אינטליגנציה לעסקים</a></li>
+                <li><a href="#metrics">ההשפעה</a></li>
+                <li><a href="#contact">צור קשר</a></li>
+                <li><a href="client_portal.html" style="color: var(--text-secondary); margin-left: 15px; font-size: 0.95rem;">כבר לקוח? התחבר</a></li>
+                <li><a href="#contact" class="btn btn-primary" style="padding: 0.6rem 1.5rem; font-size: 0.95rem;">קביעת פגישה</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="container hero-content">
+            <div class="hero-text-area">
+                <div class="chip">The Future of Automation</div>
+                <h1 class="hero-title">העובד המצטיין שלך. <br><span class="highlight">פי עשרה יותר חזק.</span></h1>
+                <p class="hero-subtitle">OnStaffAI מטמיעה סוכני AI בעסק שלך - מאומנים לתהליכי העבודה שלך, פועלים 24/7, ועולים פחות מחצי מעובד אנושי.</p>
+                <div class="dynamic-services">
+                    <span id="typewriter"></span><span class="cursor">|</span>
+                </div>
+                <div class="hero-actions">
+                    <a href="#contact" class="btn btn-primary">התחל אינטגרציה עכשיו</a>
+                    <a href="#services" class="btn btn-secondary">חקור סוכנים</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section id="metrics" class="metrics-section">
+        <div class="container">
+            <span class="section-tag">Impact</span>
+            <h2 class="section-title">הכוח שמאחורי האלגוריתם</h2>
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-value">70%</div>
+                    <div class="metric-label">חיסכון משוער בעלויות כוח אדם</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">24/7</div>
+                    <div class="metric-label">זמינות ויעילות ללא הפסקות</div>
+                </div>
+                <div class="metric-card">
+                    <div class="metric-value">3x</div>
+                    <div class="metric-label">יותר פגישות וסגירות עסקאות</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="services">
+        <div class="container">
+            <span class="section-tag">Digital Workforce</span>
+            <h2 class="section-title">ציוות סוכנים מתקדם</h2>
+            <p class="section-subtitle">בנו את עתיד העסק שלכם עם מחלקות אוטונומיות חכמות מבוססות בינה מלאכותית, המבצעות עבודה אנושית בדיוק מכני.</p>
+            
+            <div class="services-bento">
+                <!-- Support & CS - Span 2 -->
+                <div class="bento-card span-2">
+                    <div class="card-content">
+                        <div class="bento-icon-wrapper">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        </div>
+                        <h3 class="bento-title">מאיה - נציגת שירות לקוחות (CS)</h3>
+                        <p class="bento-desc">תמיכה אלגנטית ומיידית בכל שעות היממה. פתרון בעיות, שימור לקוחות ברמה הגבוהה ביותר וללא תורי המתנה.</p>
+                    </div>
+                    <img src="assets/support_agent_icon_1776605297438.png" alt="Support" class="bento-image">
+                </div>
+
+                <!-- Finance - Span 1 -->
+                <div class="bento-card span-1">
+                    <div class="card-content">
+                        <div class="bento-icon-wrapper">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                        </div>
+                        <h3 class="bento-title">איתן - איש הכספים</h3>
+                        <p class="bento-desc">עיבוד חשבוניות, גבייה אוטומטית ודיוק אבסולוטי בסוף חודש.</p>
+                    </div>
+                    <img src="assets/finance_agent_icon_1776605259390.png" alt="Finance" class="bento-image" style="width: 200px; height: 200px; right: -20px; bottom: 10px;">
+                </div>
+
+                <!-- Marketing - Span 1 -->
+                <div class="bento-card span-1">
+                    <div class="card-content">
+                        <div class="bento-icon-wrapper">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                        </div>
+                        <h3 class="bento-title">דנה - סוכנת שיווק ומכירות</h3>
+                        <p class="bento-desc">הגדלת מחזור עסקאות באונליין, פולו-אפ חכם ללידים כבויים.</p>
+                    </div>
+                    <img src="assets/marketing_agent_icon_1776605323002.png" alt="Marketing" class="bento-image" style="width: 200px; height: 200px; right: -20px; bottom: 10px;">
+                </div>
+
+                <!-- Operational - Span 2 -->
+                <div class="bento-card span-2">
+                    <div class="card-content">
+                        <div class="bento-icon-wrapper">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg>
+                        </div>
+                        <h3 class="bento-title">עומר - מנהל תפעול, הנהלה ומלאי</h3>
+                        <p class="bento-desc">מערך אוטומטי העוקב בזמן אמת אחרי ניהול המלאי, הזמנות ספקים, וטיפול ביומנים ארגוניים ברזולוציה הגבוהה ביותר.</p>
+                    </div>
+                    <img src="assets/inventory_agent_icon_1776605372096.png" alt="Inventory" class="bento-image">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ══ Contact Section ══ -->
+    <section id="contact" style="padding:6rem 0;position:relative;">
+        <div class="container" style="max-width:760px;">
+            <span class="section-tag">צור קשר</span>
+            <h2 class="section-title">מוכנים להתחיל?</h2>
+            <p class="section-subtitle" style="margin-bottom:2.5rem;">מלאו את הטופס ונציג מכירות יצור אתכם קשר תוך 24 שעות — או בחרו להצטרף בעצמכם.</p>
+
+            <!-- Form card -->
+            <div id="contact-form-wrap" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:24px;padding:2.5rem;backdrop-filter:blur(12px);">
+                <form id="contact-form" onsubmit="handleContactSubmit(event)" novalidate>
+
+                    <!-- Row 1: Name + Company -->
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+                        <div>
+                            <label style="font-size:0.8rem;color:rgba(255,255,255,0.5);display:block;margin-bottom:6px;">שם מלא <span style="color:#ea580c;">*</span></label>
+                            <input id="cf-name" type="text" required placeholder="ישראל ישראלי"
+                                style="width:100%;padding:0.8rem 1rem;border-radius:10px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.06);color:#fff;font-size:0.95rem;font-family:inherit;outline:none;transition:border-color 0.2s;box-sizing:border-box;"
+                                onfocus="this.style.borderColor='#ea580c'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'">
+                        </div>
+                        <div>
+                            <label style="font-size:0.8rem;color:rgba(255,255,255,0.5);display:block;margin-bottom:6px;">שם חברה <span style="color:#ea580c;">*</span></label>
+                            <input id="cf-company" type="text" required placeholder="חברה בע&quot;מ"
+                                style="width:100%;padding:0.8rem 1rem;border-radius:10px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.06);color:#fff;font-size:0.95rem;font-family:inherit;outline:none;transition:border-color 0.2s;box-sizing:border-box;"
+                                onfocus="this.style.borderColor='#ea580c'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'">
+                        </div>
+                    </div>
+
+                    <!-- Row 2: Email + Phone -->
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+                        <div>
+                            <label style="font-size:0.8rem;color:rgba(255,255,255,0.5);display:block;margin-bottom:6px;">אימייל <span style="color:#ea580c;">*</span></label>
+                            <input id="cf-email" type="email" required placeholder="info@company.co.il"
+                                style="width:100%;padding:0.8rem 1rem;border-radius:10px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.06);color:#fff;font-size:0.95rem;font-family:inherit;outline:none;transition:border-color 0.2s;box-sizing:border-box;"
+                                onfocus="this.style.borderColor='#ea580c'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'">
+                        </div>
+                        <div>
+                            <label style="font-size:0.8rem;color:rgba(255,255,255,0.5);display:block;margin-bottom:6px;">טלפון <span style="color:#ea580c;">*</span></label>
+                            <input id="cf-phone" type="tel" required placeholder="05X-XXXXXXX"
+                                style="width:100%;padding:0.8rem 1rem;border-radius:10px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.06);color:#fff;font-size:0.95rem;font-family:inherit;outline:none;transition:border-color 0.2s;box-sizing:border-box;"
+                                onfocus="this.style.borderColor='#ea580c'" onblur="this.style.borderColor='rgba(255,255,255,0.12)'">
+                        </div>
+                    </div>
+
+                    <!-- Agent count -->
+                    <div style="margin-bottom:1.2rem;">
+                        <label style="font-size:0.8rem;color:rgba(255,255,255,0.5);display:block;margin-bottom:6px;">
+                            כמה סוכנים אתה צריך?
+                            <span style="color:#ea580c;font-size:0.72rem;margin-right:6px;">לא חובה, אך יעזור לנו להתאים עבורך את השירות</span>
+                        </label>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            <label id="aq-1" onclick="selectAgentCount(this,'1')" style="cursor:pointer;padding:7px 18px;border-radius:20px;border:1px solid rgba(255,255,255,0.15);font-size:0.85rem;color:rgba(255,255,255,0.7);transition:all 0.2s;user-select:none;">1</label>
+                            <label id="aq-2" onclick="selectAgentCount(this,'2-3')" style="cursor:pointer;padding:7px 18px;border-radius:20px;border:1px solid rgba(255,255,255,0.15);font-size:0.85rem;color:rgba(255,255,255,0.7);transition:all 0.2s;user-select:none;">2–3</label>
+                            <label id="aq-4" onclick="selectAgentCount(this,'4-6')" style="cursor:pointer;padding:7px 18px;border-radius:20px;border:1px solid rgba(255,255,255,0.15);font-size:0.85rem;color:rgba(255,255,255,0.7);transition:all 0.2s;user-select:none;">4–6</label>
+                            <label id="aq-7" onclick="selectAgentCount(this,'7+')" style="cursor:pointer;padding:7px 18px;border-radius:20px;border:1px solid rgba(255,255,255,0.15);font-size:0.85rem;color:rgba(255,255,255,0.7);transition:all 0.2s;user-select:none;">7+</label>
+                        </div>
+                        <input type="hidden" id="cf-agent-count">
+                    </div>
+
+                    <!-- Plan selector -->
+                    <div style="margin-bottom:1.2rem;">
+                        <label style="font-size:0.8rem;color:rgba(255,255,255,0.5);display:block;margin-bottom:6px;">
+                            באיזו תוכנית תמחור אתה מעוניין?
+                            <span style="color:#ea580c;font-size:0.72rem;margin-right:6px;">לא חובה, אך יעזור לנו להתאים עבורך את השירות</span>
+                        </label>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            <label id="plan-starter" onclick="selectPlan(this,'Starter')" style="cursor:pointer;padding:7px 18px;border-radius:20px;border:1px solid rgba(255,255,255,0.15);font-size:0.85rem;color:rgba(255,255,255,0.7);transition:all 0.2s;user-select:none;">Starter</label>
+                            <label id="plan-pro" onclick="selectPlan(this,'Pro')" style="cursor:pointer;padding:7px 18px;border-radius:20px;border:1px solid rgba(255,255,255,0.15);font-size:0.85rem;color:rgba(255,255,255,0.7);transition:all 0.2s;user-select:none;">Pro</label>
+                            <label id="plan-enterprise" onclick="selectPlan(this,'Enterprise')" style="cursor:pointer;padding:7px 18px;border-radius:20px;border:1px solid rgba(255,255,255,0.15);font-size:0.85rem;color:rgba(255,255,255,0.7);transition:all 0.2s;user-select:none;">Enterprise</label>
+                        </div>
+                        <input type="hidden" id="cf-plan">
+                    </div>
+
+
+                    <!-- Agent type selector -->
+                    <div style="margin-bottom:1.8rem;">
+                        <label style="font-size:0.8rem;color:rgba(255,255,255,0.5);display:block;margin-bottom:10px;">
+                            אילו סוכנים מעניינים אותך?
+                            <span style="color:#ea580c;font-size:0.72rem;margin-right:6px;">לא חובה, אך יעזור לנו להתאים עבורך את השירות</span>
+                        </label>
+                        <div style="display:flex;flex-wrap:wrap;gap:8px;" id="agent-pills">
+                            <button type="button" data-agent="customer-service" onclick="toggleAgentPill(this)" class="agent-pill">🎧 שירות לקוחות</button>
+                            <button type="button" data-agent="tech-support"     onclick="toggleAgentPill(this)" class="agent-pill">🔧 תמיכה טכנית</button>
+                            <button type="button" data-agent="marketing"        onclick="toggleAgentPill(this)" class="agent-pill">📣 שיווק ומכירות</button>
+                            <button type="button" data-agent="finance"          onclick="toggleAgentPill(this)" class="agent-pill">💰 כספים</button>
+                            <button type="button" data-agent="operations"       onclick="toggleAgentPill(this)" class="agent-pill">📦 תפעול</button>
+                            <button type="button" data-agent="onboarding"       onclick="toggleAgentPill(this)" class="agent-pill">🚀 מלווה לקוחות</button>
+                            <button type="button" data-agent="hr"               onclick="toggleAgentPill(this)" class="agent-pill">👥 HR וגיוס</button>
+                            <button type="button" data-agent="pm"               onclick="toggleAgentPill(this)" class="agent-pill">📋 מנהל פרויקטים</button>
+                            <button type="button" data-agent="content"          onclick="toggleAgentPill(this)" class="agent-pill">✍️ תוכן ומותג</button>
+                            <button type="button" data-agent="analytics"        onclick="toggleAgentPill(this)" class="agent-pill">📊 אנליטיקס</button>
+                            <button type="button" data-agent="social"           onclick="toggleAgentPill(this)" class="agent-pill">📱 רשתות חברתיות</button>
+                        </div>
+                        <input type="hidden" id="cf-agents">
+                    </div>
+
+                    <!-- Submit row -->
+                    <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;">
+                        <button type="submit" id="cf-submit" class="btn btn-primary" style="padding:0.9rem 2.2rem;font-size:1rem;flex:1;min-width:200px;">
+                            שלח ונחזור אליך תוך 24 שעות
+                        </button>
+                        <a href="onboarding.html" style="color:#ea580c;font-size:0.9rem;text-decoration:none;display:flex;align-items:center;gap:6px;white-space:nowrap;">
+                            או הגדר בעצמך &rarr;
+                        </a>
+                    </div>
+                </form>
+
+                <!-- Thank you state (hidden) -->
+                <div id="contact-thanks" style="display:none;text-align:center;padding:2rem 0;">
+                    <div style="font-size:3rem;margin-bottom:1rem;">🎉</div>
+                    <h3 style="color:#fff;font-size:1.4rem;margin-bottom:0.8rem;">תודה! קיבלנו את פנייתך</h3>
+                    <p style="color:rgba(255,255,255,0.6);margin-bottom:1.5rem;line-height:1.7;">שלחנו לך מייל אישור. נציג מכירות יצור איתך קשר תוך 24 שעות.<br>רוצה להתחיל כבר עכשיו? הגדר את הסוכנים שלך בעצמך.</p>
+                    <a id="thanks-onboard-link" href="onboarding.html" class="btn btn-primary">הגדרה עצמית &rarr;</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container footer-content">
+            <div style="display:flex; align-items:center; gap: 1rem;">
+                <img src="assets/agentflow_logo_1776605230557.png" alt="Logo" style="height: 30px;">
+                <span style="font-family:'Outfit'; font-weight:700; color:#fff;">AgentFlow</span>
+            </div>
+            <p>Intelligence Engineered for SMBs. &copy; 2026</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        // Track mouse position over bento cards to create the hover spotlight effect
+        document.querySelectorAll('.bento-card').forEach(card => {
+            card.addEventListener('mousemove', e => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                card.style.setProperty('--mouse-x', `${x}px`);
+                card.style.setProperty('--mouse-y', `${y}px`);
+            });
+        });
+    </script>
+    <!-- Firebase SDK (for lead storage) -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+        import { getFirestore, collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBExample-ReplaceWithYourKey",
+            authDomain: "onstaffai.firebaseapp.com",
+            projectId: "onstaffai",
+            storageBucket: "onstaffai.appspot.com",
+            messagingSenderId: "000000000000",
+            appId: "1:000000000000:web:example"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db  = getFirestore(app);
+        window._db = db;
+        window._fsCollection = collection(db, 'leads');
+        window._addDoc = addDoc;
+        window._serverTimestamp = serverTimestamp;
+    </script>
+
+    <!-- EmailJS (swap in your Public Key when ready) -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script>
+        // ── EmailJS config ── Fill these in from your EmailJS dashboard
+        const EMAILJS_PUBLIC_KEY  = '7IoARO-EcljLAzrok';
+        const EMAILJS_SERVICE_ID  = 'service_ne5z4wv';
+        const EMAILJS_TEMPLATE_TY = 'template_sl4n308'; // thank-you template
+        const ADMIN_EMAIL         = 'admin@onstaffai.com';
+
+        // initialise when keys are set
+        if (EMAILJS_PUBLIC_KEY !== 'YOUR_PUBLIC_KEY') {
+            emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+        }
+
+        // ── Pill toggle helpers ──────────────────────────────
+        function toggleAgentPill(btn) {
+            btn.classList.toggle('selected');
+            const selected = [...document.querySelectorAll('.agent-pill.selected')]
+                .map(b => b.dataset.agent).join(',');
+            document.getElementById('cf-agents').value = selected;
+        }
+
+        var _selectedCount = '';
+        function selectAgentCount(el, val) {
+            document.querySelectorAll('[id^="aq-"]').forEach(function(l) {
+                l.style.background = 'transparent';
+                l.style.color = 'rgba(255,255,255,0.7)';
+                l.style.borderColor = 'rgba(255,255,255,0.15)';
+            });
+            el.style.background   = 'rgba(234,88,12,0.18)';
+            el.style.color        = '#fff';
+            el.style.borderColor  = '#ea580c';
+            _selectedCount = val;
+            document.getElementById('cf-agent-count').value = val;
+        }
+
+        // ── Form submit ──────────────────────────────────────
+        async function handleContactSubmit(e) {
+            e.preventDefault();
+            const name    = document.getElementById('cf-name').value.trim();
+            const company = document.getElementById('cf-company').value.trim();
+            const email   = document.getElementById('cf-email').value.trim();
+            const phone   = document.getElementById('cf-phone').value.trim();
+            const count   = document.getElementById('cf-agent-count').value;
+            const agents  = document.getElementById('cf-agents').value;
+            const plan    = document.getElementById('cf-plan').value;
+
+            if (!name || !company || !email || !phone) {
+                alert('נא למלא את שדות החובה: שם, חברה, אימייל וטלפון');
+                return;
+            }
+
+            const btn = document.getElementById('cf-submit');
+            btn.disabled = true;
+            btn.textContent = 'שולח…';
+
+            // 1. Save lead to Firestore
+            const lead = {
+                name, company, email, phone,
+                agentCount: count,
+                        plan: plan, agents,
+                step: 1, reminderCount: 0,
+                status: 'new',
+                createdAt: window._serverTimestamp ? window._serverTimestamp() : new Date().toISOString(),
+                lastActivity: window._serverTimestamp ? window._serverTimestamp() : new Date().toISOString(),
+            };
+            let leadId = '';
+            try {
+                if (window._db && window._addDoc && window._fsCollection) {
+                    const ref = await window._addDoc(window._fsCollection, lead);
+                    leadId = ref.id;
+                }
+            } catch(err) { console.warn('Firestore save failed:', err); }
+
+            // 2. Send thank-you email via EmailJS (when configured)
+            const onboardUrl = `${location.origin}/onboarding.html?name=${encodeURIComponent(name)}&company=${encodeURIComponent(company)}&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone)}&agents=${encodeURIComponent(agents)}&lid=${leadId}`;
+            if (EMAILJS_PUBLIC_KEY !== 'YOUR_PUBLIC_KEY') {
+                try {
+                    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_TY, {
+                        to_email: email, email: email, to: email, user_email: email, to_name: name, company,
+                        agents: agents,
+                        plan: plan || 'לא צוין',
+                        onboard_url: onboardUrl,
+                        onboarding_link: onboardUrl,
+                        admin_email: ADMIN_EMAIL,
+                    });
+                } catch(err) { console.warn('EmailJS send failed:', err); }
+            }
+
+            // Update thank-you link with pre-filled params
+            document.getElementById('thanks-onboard-link').href = onboardUrl;
+
+            // 3. Show thank-you state
+            document.getElementById('contact-form').style.display = 'none';
+            document.getElementById('contact-thanks').style.display = 'block';
+        }
+
+        // expose to inline onclick
+        window.handleContactSubmit = handleContactSubmit;
+        window.toggleAgentPill     = toggleAgentPill;
+        window.selectAgentCount    = selectAgentCount;
+        window.selectPlan          = selectPlan;
+    </script>
+</body>
+</html>

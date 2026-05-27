@@ -1,0 +1,2460 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-H73PEQ49ZT"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-H73PEQ49ZT');
+</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OnStaffAI - פורטל לקוח</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js"></script>
+    <script>
+      if (!firebase.apps.length) firebase.initializeApp({apiKey:'AIzaSyD8bNj7KimdgkZ8rKyd4DACwHWGtbFBpTM',authDomain:'onstaffai.firebaseapp.com',projectId:'onstaffai',storageBucket:'onstaffai.firebasestorage.app',messagingSenderId:'928687174326',appId:'1:928687174326:web:859a3cc6719843457dec17'});
+      window._db = firebase.firestore();
+    </script>
+    
+    <!-- Document Parsing Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script>pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.21/mammoth.browser.min.js"></script>
+    
+    <style>
+        :root {
+            --bg-color: #fafaf7;
+            --surface-color: #ffffff;
+            --surface-color-light: #f2efe8;
+            --surface-border: #e6e1d6;
+            --text-primary: #111111;
+            --text-secondary: #78746b;
+            --primary-glow: rgba(234, 88, 12, 0.15);
+            --primary-color: #ea580c;
+            --accent-color: #f59e0b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --font-main: 'Heebo', sans-serif;
+            --font-heading: 'Outfit', sans-serif;
+        }
+        /* Live chats panel */
+        #live-chats-panel { display:flex; gap:0; height:calc(100vh - 120px); }
+        #sessions-list { width:320px; flex-shrink:0; border-left:1px solid var(--surface-border); overflow-y:auto; }
+        #session-detail { flex:1; display:flex; flex-direction:column; }
+        .session-item { padding:14px 16px; border-bottom:1px solid var(--surface-border); cursor:pointer; transition:background .15s; }
+        .session-item:hover { background:var(--surface-color-light); }
+        .session-item.selected { background:rgba(234,88,12,0.06); border-right:3px solid var(--primary-color); }
+        .session-item.awaiting { border-right:3px solid #ef4444; }
+        .badge-red { background:#ef4444; color:#fff; border-radius:10px; padding:1px 7px; font-size:11px; font-weight:700; }
+        #operator-messages { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:10px; }
+        .op-msg-user { align-self:flex-end; background:var(--primary-color); color:#fff; padding:8px 14px; border-radius:16px 16px 4px 16px; max-width:70%; font-size:13px; }
+        .op-msg-agent { align-self:flex-start; background:var(--surface-color-light); color:var(--text-primary); padding:8px 14px; border-radius:16px 16px 16px 4px; max-width:70%; font-size:13px; border:1px solid var(--surface-border); }
+        .op-msg-human { align-self:flex-start; background:#eff6ff; color:#1e3a8a; padding:8px 14px; border-radius:16px 16px 16px 4px; max-width:70%; font-size:13px; border:1px solid #bfdbfe; }
+        #operator-reply-area { padding:14px; border-top:1px solid var(--surface-border); display:none; }
+        #operator-reply-row { display:flex; gap:8px; }
+        #operator-input { flex:1; padding:10px 14px; border:1px solid var(--surface-border); border-radius:10px; font-family:var(--font-main); font-size:14px; background:var(--surface-color-light); color:var(--text-primary); }
+        #operator-input:focus { outline:none; border-color:var(--primary-color); }
+        .btn-send-op { background:var(--primary-color); color:#fff; border:none; padding:10px 18px; border-radius:10px; font-weight:600; cursor:pointer; font-family:var(--font-main); }
+        [data-theme="dark"] {
+            --bg-color: #0c0c0a;
+            --surface-color: #161612;
+            --surface-color-light: #1e1c18;
+            --surface-border: #26241d;
+            --text-primary: #f6f3ea;
+            --text-secondary: #8b877c;
+            --primary-glow: rgba(234,88,12,0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body, html {
+            overflow-x: hidden;
+            max-width: 100%;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background-color: var(--surface-color);
+            border-left: 1px solid var(--surface-border);
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            z-index: 10;
+        }
+
+        .logo {
+            font-family: var(--font-heading);
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            box-shadow: 0 0 20px var(--primary-glow);
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .nav-item:hover {
+            background-color: var(--surface-color-light);
+            color: var(--text-primary);
+        }
+
+        .nav-item.active {
+            background-color: rgba(234, 88, 12, 0.07);
+            color: var(--primary-color);
+            border-right: 3px solid var(--primary-color); background: rgba(234,88,12,0.07);
+        }
+
+        .nav-item i {
+            font-size: 20px;
+        }
+
+        /* Toasts */
+        #toast-container { position:fixed; top:24px; left:50%; transform:translateX(-50%); z-index:9999; display:flex; flex-direction:column; gap:10px; pointer-events:none; min-width:340px; max-width:480px; }
+        .toast { display:flex; align-items:center; gap:12px; padding:14px 18px; border-radius:12px; border:none; box-shadow:0 6px 24px rgba(0,0,0,0.22); font-size:14px; font-weight:600; pointer-events:all; animation:toastIn 0.3s ease; transition:opacity 0.35s, transform 0.35s; }
+        .toast.success { background:#14532d; color:#bbf7d0; }
+        .toast.error   { background:#7f1d1d; color:#fecaca; }
+        .toast.info    { background:#1c1917; color:#fed7aa; border:1px solid rgba(234,88,12,0.5); }
+        .toast.loading { background:#1e3a5f; color:#bfdbfe; }
+        .toast-icon { font-size:20px; flex-shrink:0; }
+        .toast-msg  { flex:1; line-height:1.4; }
+        .toast-close { background:rgba(255,255,255,0.15); border:none; color:inherit; border-radius:50%; width:26px; height:26px; font-size:16px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:background 0.15s; }
+        .toast-close:hover { background:rgba(255,255,255,0.3); }
+        @keyframes toastIn { from{opacity:0;transform:translateY(-12px)} to{opacity:1;transform:translateY(0)} }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .main-content::before {
+            content: '';
+            position: absolute;
+            top: -100px;
+            left: -100px;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, var(--primary-glow) 0%, transparent 70%);
+            opacity: 0.15;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .section {
+            display: none;
+            position: relative;
+            z-index: 1;
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-family: var(--font-heading);
+            font-size: 32px;
+            font-weight: 600;
+        }
+
+        /* Dashboard Cards */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .card {
+            background: var(--surface-color);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--surface-border);
+            border-radius: 16px;
+            padding: 24px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border-color: rgba(255,255,255,0.1);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            background: rgba(59, 130, 246, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: var(--primary-color);
+        }
+
+        .card-title {
+            color: var(--text-secondary);
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .card-value {
+            font-family: var(--font-heading);
+            font-size: 36px;
+            font-weight: 700;
+        }
+
+        /* QA Section */
+        .qa-container {
+            background: var(--surface-color);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--surface-border);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-control {
+            width: 100%;
+            background: var(--surface-color-light);
+            border: 1px solid var(--surface-border);
+            color: var(--text-primary);
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-family: var(--font-main);
+            transition: all 0.2s ease;
+            margin-top: 8px;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+
+        textarea.form-control {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: var(--font-main);
+        }
+
+        .btn:hover {
+            box-shadow: 0 0 15px var(--primary-glow);
+            transform: translateY(-2px);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid var(--surface-border);
+            color: var(--text-primary);
+        }
+        
+        .btn-outline:hover {
+            background: var(--surface-color-light);
+            box-shadow: none;
+            border-color: var(--text-secondary);
+        }
+
+        /* Integration Steps */
+        .step-container {
+            border-right: 2px solid var(--surface-border);
+            padding-right: 20px;
+            margin-right: 10px;
+            position: relative;
+        }
+
+        .step {
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .step::before {
+            content: '';
+            position: absolute;
+            right: -27px;
+            top: 0;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            border: 4px solid var(--bg-color);
+        }
+
+        .code-block {
+            background: var(--surface-color-light);
+            border: 1px solid var(--surface-border);
+            border-radius: 8px;
+            padding: 16px;
+            font-family: monospace;
+            color: var(--text-secondary);
+            margin-top: 10px;
+            direction: ltr;
+            text-align: left;
+            position: relative;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: right;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--surface-border);
+        }
+
+        th {
+            color: var(--text-secondary);
+            font-weight: 500;
+            font-size: 14px;
+            background: rgba(255,255,255,0.02);
+        }
+
+</style>
+</head>
+<body>
+    <!-- Client Login Screen -->
+    <div id="client-login-screen" style="display:flex;position:fixed;inset:0;z-index:9999;background:var(--bg-color);align-items:center;justify-content:center;">
+        <div style="background:var(--surface-color);border:1px solid var(--surface-border);border-radius:20px;padding:48px 40px;max-width:420px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.08);">
+            <div style="width:64px;height:64px;border-radius:16px;background:linear-gradient(135deg,#ea580c,#f59e0b);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:28px;color:#fff;"><i class="ph ph-user-circle"></i></div>
+            <h1 style="font-family:'Outfit',sans-serif;font-size:28px;font-weight:700;margin-bottom:6px;">OnStaffAI</h1>
+            <p style="color:var(--text-secondary);font-size:14px;margin-bottom:32px;">פורטל לקוח — התחברות</p>
+            <div id="client-login-error" style="display:none;background:#fef2f2;color:#dc2626;border:1px solid #fecaca;border-radius:10px;padding:10px;font-size:13px;margin-bottom:16px;">שם משתמש או סיסמא שגויים</div>
+            <div id="client-reset-msg" style="display:none;background:#eff6ff;color:#1e40af;border:1px solid #bfdbfe;border-radius:10px;padding:10px;font-size:13px;margin-bottom:16px;">בקשת איפוס סיסמא נשלחה. נציג יצור קשר בהקדם.</div>
+            
+            <div id="client-login-fields">
+                <input id="client-login-user" type="text" placeholder="שם משתמש" autocomplete="username" style="width:100%;padding:12px 16px;border:1px solid var(--surface-border);border-radius:12px;font-family:'Heebo',sans-serif;font-size:15px;margin-bottom:12px;background:var(--surface-color-light);color:var(--text-primary);text-align:right;" autofocus>
+                
+                <div style="position:relative; margin-bottom:12px;">
+                    <input id="client-login-pass" type="password" placeholder="סיסמא" autocomplete="current-password" style="width:100%;padding:12px 16px 12px 40px;border:1px solid var(--surface-border);border-radius:12px;font-family:'Heebo',sans-serif;font-size:15px;background:var(--surface-color-light);color:var(--text-primary);text-align:right;" onkeydown="if(event.key==='Enter')clientLogin()">
+                    <button type="button" onclick="togglePeek('client-login-pass', this)" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-secondary);cursor:pointer;font-size:18px;display:flex;align-items:center;padding:0;"><i class="ph ph-eye"></i></button>
+                </div>
+                
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;font-size:14px;">
+                    <a href="#" onclick="clientForgotPassword();return false;" style="color:var(--primary-color);font-size:13px;text-decoration:none;">שכחתי סיסמא</a>
+                    <label style="cursor:pointer;display:inline-flex;align-items:center;gap:8px;"><input type="checkbox" id="client-remember" style="accent-color:var(--primary-color);width:16px;height:16px;"> זכור אותי ל-30 יום</label>
+                </div>
+
+                <button id="client-btn-login" onclick="clientLogin()" style="width:100%;padding:14px;border:none;border-radius:12px;background:linear-gradient(135deg,#ea580c,#d94f04);color:#fff;font-family:'Heebo',sans-serif;font-size:16px;font-weight:700;cursor:pointer;transition:transform .15s,box-shadow .15s;box-shadow:0 4px 15px rgba(234,88,12,0.3);" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform=''">המשך</button>
+            </div>
+
+            <!-- 2FA Box -->
+            <div id="client-2fa-box" style="display:none;">
+                <p style="font-size:14px;margin-bottom:16px;color:var(--text-secondary);">שלחנו קוד אימות למייל ולנייד המעודכנים בחשבונך. אנא הזן אותו כאן:</p>
+                <input id="client-login-code" type="text" placeholder="קוד בעל 6 ספרות" autocomplete="one-time-code" maxlength="6" style="width:100%;letter-spacing:4px;padding:12px 16px;border:1px solid var(--surface-border);border-radius:12px;font-family:'Heebo',sans-serif;font-size:20px;font-weight:600;margin-bottom:16px;background:var(--surface-color-light);color:var(--text-primary);text-align:center;" onkeydown="if(event.key==='Enter')verifyClient2FA()">
+                <button id="client-btn-verify" onclick="verifyClient2FA()" style="width:100%;padding:14px;border:none;border-radius:12px;background:linear-gradient(135deg,#10b981,#059669);color:#fff;font-family:'Heebo',sans-serif;font-size:16px;font-weight:700;cursor:pointer;transition:transform .15s,box-shadow .15s;box-shadow:0 4px 15px rgba(16,185,129,0.3);" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform=''">אמת קוד</button>
+                <div style="margin-top:20px;font-size:14px;color:var(--text-secondary);">
+                    <div id="client-timer-text">תוקף הקוד יפוג בעוד <span id="client-timer" style="font-weight:600;color:var(--text-primary);">05:00</span></div>
+                    <div style="margin-top:8px;">
+                        לא קיבלת את הקוד? <a href="#" id="client-resend-btn" onclick="resendClient2FA();return false;" style="color:var(--text-secondary);text-decoration:none;pointer-events:none;opacity:0.5;">שלח שוב</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Force Password Change Screen -->
+    <div id="client-force-pwd-screen" style="display:none;position:fixed;inset:0;z-index:9999;background:var(--bg-color);align-items:center;justify-content:center;">
+        <div style="background:var(--surface-color);border:1px solid var(--surface-border);border-radius:20px;padding:48px 40px;max-width:420px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.08);">
+            <div style="font-size:36px;margin-bottom:12px;">🔒</div>
+            <h1 style="font-family:'Outfit',sans-serif;font-size:24px;font-weight:700;margin-bottom:6px;">החלפת סיסמא</h1>
+            <p style="color:var(--text-secondary);font-size:14px;margin-bottom:32px;">זוהי התחברות ראשונה עם סיסמא זמנית. אנא בחר סיסמא חדשה כדי להמשיך.</p>
+            
+            <div id="client-force-pwd-error" style="display:none;background:#fef2f2;color:#dc2626;border:1px solid #fecaca;border-radius:10px;padding:10px;font-size:13px;margin-bottom:16px;"></div>
+            
+            <input id="client-new-pass" type="password" placeholder="סיסמא חדשה (לפחות 6 תווים)" style="width:100%;padding:12px 16px;border:1px solid var(--surface-border);border-radius:12px;font-family:'Heebo',sans-serif;font-size:15px;margin-bottom:12px;background:var(--surface-color-light);color:var(--text-primary);text-align:right;">
+            <input id="client-new-pass2" type="password" placeholder="אימות סיסמא חדשה" style="width:100%;padding:12px 16px;border:1px solid var(--surface-border);border-radius:12px;font-family:'Heebo',sans-serif;font-size:15px;margin-bottom:24px;background:var(--surface-color-light);color:var(--text-primary);text-align:right;">
+            
+            <button id="client-btn-save-pwd" onclick="saveNewPassword()" style="width:100%;padding:14px;border:none;border-radius:12px;background:linear-gradient(135deg,#ea580c,#d94f04);color:#fff;font-family:'Heebo',sans-serif;font-size:16px;font-weight:700;cursor:pointer;">שמור והיכנס</button>
+        </div>
+    </div>
+
+    <script>
+    // Client credentials (stored in Firestore clientAccounts collection)
+    // Fallback: hardcoded demo account
+    var _clientCredentials = { 'alpha': { password: 'Alpha2024!', companyName: 'אלפא בע״מ' } };
+
+    async function _loadClientCredentials() {
+        try {
+            var snap = await window._db.collection('clientAccounts').get();
+            snap.forEach(function(doc) {
+                var d = doc.data();
+                _clientCredentials[d.username] = { 
+                    password: d.password, 
+                    companyName: d.companyName || doc.id, 
+                    email: d.email || '',
+                    forcePasswordChange: !!d.forcePasswordChange
+                };
+            });
+        } catch(e) { console.log('No clientAccounts collection yet'); }
+    }
+    _loadClientCredentials();
+
+    function togglePeek(inputId, btnElement) {
+        var input = document.getElementById(inputId);
+        var icon = btnElement.querySelector('i');
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.className = 'ph ph-eye-slash';
+        } else {
+            input.type = 'password';
+            icon.className = 'ph ph-eye';
+        }
+    }
+
+    var _clientTimerInterval = null;
+    function startClientTimer() {
+        clearInterval(_clientTimerInterval);
+        var timeLeft = 300;
+        var resendWait = 60;
+        var timerEl = document.getElementById('client-timer');
+        var resendBtn = document.getElementById('client-resend-btn');
+        
+        resendBtn.style.pointerEvents = 'none';
+        resendBtn.style.opacity = '0.5';
+        resendBtn.textContent = 'שלח שוב (זמין בעוד ' + resendWait + ' שניות)';
+        
+        _clientTimerInterval = setInterval(function() {
+            timeLeft--;
+            resendWait--;
+            
+            if (resendWait > 0) {
+                resendBtn.textContent = 'שלח שוב (זמין בעוד ' + resendWait + ' שניות)';
+            } else if (resendWait === 0) {
+                resendBtn.style.pointerEvents = 'auto';
+                resendBtn.style.opacity = '1';
+                resendBtn.textContent = 'שלח שוב';
+                resendBtn.style.color = 'var(--primary-color)';
+            }
+            
+            if (timeLeft <= 0) {
+                clearInterval(_clientTimerInterval);
+                if (timerEl) {
+                    timerEl.textContent = '00:00';
+                    timerEl.style.color = 'var(--danger)';
+                }
+                document.getElementById('client-timer-text').innerHTML = '<span style="color:var(--danger)">הקוד פג תוקף, אנא שלח שוב.</span>';
+                return;
+            }
+            
+            var m = Math.floor(timeLeft / 60);
+            var s = timeLeft % 60;
+            if (timerEl) {
+                timerEl.textContent = (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+            }
+        }, 1000);
+    }
+
+    function resendClient2FA() {
+        var u = _clientPendingUsername;
+        var account = _clientCredentials[u];
+        if (!account) return;
+        var email = account.email || 'dvir@onstaffai.com';
+        var phone = account.phone || '050-1234567';
+        
+        var btnResend = document.getElementById('client-resend-btn');
+        btnResend.style.pointerEvents = 'none';
+        btnResend.style.opacity = '0.5';
+        btnResend.textContent = 'שולח...';
+        
+        var request2FA = firebase.functions().httpsCallable('request2FA');
+        request2FA({ username: u, email: email, phone: phone }).then(function(res) {
+            document.getElementById('client-timer-text').innerHTML = 'תוקף הקוד יפוג בעוד <span id="client-timer" style="font-weight:600;color:var(--text-primary);">05:00</span>';
+            startClientTimer();
+        }).catch(function(err) {
+            console.error(err);
+            document.getElementById('client-login-error').textContent = 'שגיאה בשליחת קוד: ' + err.message;
+            document.getElementById('client-login-error').style.display = 'block';
+            btnResend.style.pointerEvents = 'auto';
+            btnResend.style.opacity = '1';
+            btnResend.textContent = 'שלח שוב';
+        });
+    }
+
+    var _clientPendingUsername = null;
+    function clientLogin() {
+        var u = document.getElementById('client-login-user').value.trim().toLowerCase();
+        var p = document.getElementById('client-login-pass').value;
+        document.getElementById('client-reset-msg').style.display = 'none';
+        document.getElementById('client-login-error').style.display = 'none';
+        
+        var account = _clientCredentials[u];
+        if (account && account.password === p) {
+            var email = account.email || 'dvir@onstaffai.com'; // fallback to dvir for testing if empty
+            var phone = account.phone || '050-1234567';
+            
+            var btnLogin = document.getElementById('client-btn-login');
+            btnLogin.disabled = true;
+            if (!document.getElementById('spin-style')) {
+                document.head.insertAdjacentHTML('beforeend', '<style id="spin-style">@keyframes spinBtn { 100% { transform: rotate(360deg); } }</style>');
+            }
+            btnLogin.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;gap:8px;"><svg style="width:20px;height:20px;animation:spinBtn 1s linear infinite;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" stroke-opacity="0.25"></circle><path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>שולח קוד...</span></div>';
+            
+            var request2FA = firebase.functions().httpsCallable('request2FA');
+            request2FA({ username: u, email: email, phone: phone }).then(function(res) {
+                _clientPendingUsername = u;
+                document.getElementById('client-login-fields').style.display = 'none';
+                document.getElementById('client-2fa-box').style.display = 'block';
+                document.getElementById('client-login-code').value = '';
+                document.getElementById('client-timer-text').innerHTML = 'תוקף הקוד יפוג בעוד <span id="client-timer" style="font-weight:600;color:var(--text-primary);">05:00</span>';
+                document.getElementById('client-login-code').focus();
+                startClientTimer();
+            }).catch(function(err) {
+                console.error(err);
+                document.getElementById('client-login-error').textContent = 'שגיאה בשליחת קוד: ' + err.message;
+                document.getElementById('client-login-error').style.display = 'block';
+                btnLogin.disabled = false;
+                btnLogin.innerHTML = 'המשך';
+            });
+        } else {
+            document.getElementById('client-login-error').textContent = 'שם משתמש או סיסמא שגויים';
+            document.getElementById('client-login-error').style.display = 'block';
+            document.getElementById('client-login-pass').value = '';
+        }
+    }
+
+    function verifyClient2FA() {
+        var code = document.getElementById('client-login-code').value.trim();
+        var btnVerify = document.getElementById('client-btn-verify');
+        if (code.length !== 6) return;
+        
+        btnVerify.disabled = true;
+        if (!document.getElementById('spin-style')) {
+            document.head.insertAdjacentHTML('beforeend', '<style id="spin-style">@keyframes spinBtn { 100% { transform: rotate(360deg); } }</style>');
+        }
+        btnVerify.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;gap:8px;"><svg style="width:20px;height:20px;animation:spinBtn 1s linear infinite;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" stroke-opacity="0.25"></circle><path fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>מאמת...</span></div>';
+        
+        window._db.collection('authCodes').doc(_clientPendingUsername).get().then(function(doc) {
+            if (doc.exists && doc.data().code === code) {
+                var expiresAt = doc.data().expiresAt.toDate();
+                if (new Date() > expiresAt) {
+                    throw new Error('הקוד פג תוקף');
+                }
+                
+                var remember = document.getElementById('client-remember').checked;
+                var account = _clientCredentials[_clientPendingUsername];
+                var authData = { 
+                    valid: true, 
+                    user: _clientPendingUsername,
+                    name: account.companyName || _clientPendingUsername,
+                    phone: account.phone || '050-1234567',
+                    expires: remember ? new Date(Date.now() + 30*24*60*60*1000).getTime() : 0 
+                };
+                
+                if (remember) {
+                    localStorage.setItem('client_auth_v2', JSON.stringify(authData));
+                } else {
+                    sessionStorage.setItem('client_auth_v2', JSON.stringify(authData));
+                }
+                
+                // For legacy compatibility
+                sessionStorage.setItem('client_auth', _clientPendingUsername);
+                sessionStorage.setItem('client_name', authData.name);
+                sessionStorage.setItem('client_phone', authData.phone);
+                
+                document.getElementById('client-login-screen').style.display = 'none';
+                document.getElementById('client-login-error').style.display = 'none';
+                doc.ref.delete(); // clear code
+                
+                if (account.forcePasswordChange) {
+                    showForcePasswordChangeScreen();
+                } else {
+                    // Init portal
+                    if (typeof initLiveChats === 'function' && !_lcInited) initLiveChats();
+                }
+            } else {
+                throw new Error('קוד שגוי');
+            }
+        }).catch(function(err) {
+            document.getElementById('client-login-error').textContent = err.message || 'שגיאה באימות';
+            document.getElementById('client-login-error').style.display = 'block';
+            btnVerify.disabled = false;
+            btnVerify.textContent = 'אמת קוד';
+            document.getElementById('client-login-code').value = '';
+        });
+    }
+
+    function showForcePasswordChangeScreen() {
+        document.getElementById('client-force-pwd-screen').style.display = 'flex';
+        document.getElementById('client-new-pass').focus();
+    }
+    
+    async function saveNewPassword() {
+        var p1 = document.getElementById('client-new-pass').value;
+        var p2 = document.getElementById('client-new-pass2').value;
+        var errEl = document.getElementById('client-force-pwd-error');
+        
+        if (p1.length < 6) {
+            errEl.textContent = 'הסיסמא חייבת להכיל לפחות 6 תווים';
+            errEl.style.display = 'block';
+            return;
+        }
+        if (p1 !== p2) {
+            errEl.textContent = 'הסיסמאות אינן תואמות';
+            errEl.style.display = 'block';
+            return;
+        }
+        
+        errEl.style.display = 'none';
+        var btn = document.getElementById('client-btn-save-pwd');
+        btn.disabled = true;
+        btn.textContent = 'שומר...';
+        
+        try {
+            await window._db.collection('clientAccounts').doc(_clientPendingUsername).update({
+                password: p1,
+                forcePasswordChange: false,
+                updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            
+            // update local cache
+            if (_clientCredentials[_clientPendingUsername]) {
+                _clientCredentials[_clientPendingUsername].password = p1;
+                _clientCredentials[_clientPendingUsername].forcePasswordChange = false;
+            }
+            
+            document.getElementById('client-force-pwd-screen').style.display = 'none';
+            if (typeof initLiveChats === 'function' && !_lcInited) initLiveChats();
+        } catch(e) {
+            errEl.textContent = 'שגיאה בשמירת סיסמא: ' + e.message;
+            errEl.style.display = 'block';
+            btn.disabled = false;
+            btn.textContent = 'שמור והיכנס';
+        }
+    }
+
+    function clientLogout() {
+        sessionStorage.removeItem('client_auth');
+        sessionStorage.removeItem('client_name');
+        sessionStorage.removeItem('client_phone');
+        sessionStorage.removeItem('client_auth_v2');
+        localStorage.removeItem('client_auth_v2');
+        location.reload();
+    }
+    async function clientForgotPassword() {
+        var u = document.getElementById('client-login-user').value.trim();
+        if (!u) { showToast('אנא הזן שם משתמש תחילה', 'error'); return; }
+        try {
+            await window._db.collection('passwordResetRequests').add({
+                username: u,
+                type: 'client',
+                requestedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                status: 'pending'
+            });
+        } catch(e) {}
+        document.getElementById('client-login-error').style.display = 'none';
+        document.getElementById('client-reset-msg').style.display = 'block';
+    }
+    // Check auth on load
+    var sessionAuth2 = sessionStorage.getItem('client_auth_v2');
+    var localAuth2 = localStorage.getItem('client_auth_v2');
+    var authObj2 = null;
+    
+    // --- ADMIN IMPERSONATION LOGIC ---
+    var urlParams = new URLSearchParams(window.location.search);
+    var impersonateId = urlParams.get('impersonate');
+    if (impersonateId) {
+        var adminAuthStr = sessionStorage.getItem('admin_auth') || localStorage.getItem('admin_auth');
+        var adminAuthObj = null;
+        if (adminAuthStr) {
+            try { adminAuthObj = JSON.parse(adminAuthStr); } catch(e) {}
+            if (adminAuthStr === 'true') adminAuthObj = { valid: true, expires: 0 };
+        }
+        
+        if (adminAuthObj && adminAuthObj.valid && (adminAuthObj.expires === 0 || Date.now() < adminAuthObj.expires)) {
+            var impName = urlParams.get('name') || impersonateId;
+            var impContact = urlParams.get('contact') || impName;
+            var impPhone = urlParams.get('phone') || '050-1234567';
+            authObj2 = { 
+                valid: true, 
+                user: impersonateId,
+                name: impName,
+                contact: impContact,
+                phone: impPhone,
+                expires: 0 
+            };
+            sessionStorage.setItem('client_auth_v2', JSON.stringify(authObj2));
+            // Remove URL parameters securely
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+    }
+    // ----------------------------------
+    
+    if (!authObj2) {
+        if (sessionAuth2) {
+            try { authObj2 = JSON.parse(sessionAuth2); } catch(e) {}
+        } else if (localAuth2) {
+            try { authObj2 = JSON.parse(localAuth2); } catch(e) {}
+        }
+    }
+    
+    // Legacy support
+    if (!authObj2 && sessionStorage.getItem('client_auth')) {
+        authObj2 = { 
+            valid: true, 
+            user: sessionStorage.getItem('client_auth'),
+            name: sessionStorage.getItem('client_name'),
+            phone: sessionStorage.getItem('client_phone'),
+            expires: 0 
+        };
+    }
+    
+    if (authObj2 && authObj2.valid) {
+        if (authObj2.expires === 0 || Date.now() < authObj2.expires) {
+            sessionStorage.setItem('client_auth', authObj2.user);
+            sessionStorage.setItem('client_name', authObj2.name);
+            sessionStorage.setItem('client_phone', authObj2.phone || '050-1234567');
+            localStorage.setItem('client_auth', authObj2.user);
+            localStorage.setItem('client_name', authObj2.name);
+            
+            // Set dynamic name in UI and initialize chats after DOM is ready
+            document.addEventListener('DOMContentLoaded', function() {
+                var loginScreen = document.getElementById('client-login-screen');
+                if (loginScreen) loginScreen.style.display = 'none';
+                
+                var cName = authObj2.name || authObj2.user;
+                var sbName = document.getElementById('sidebar-client-name');
+                if (sbName) sbName.textContent = cName;
+                
+                var dbWelcome = document.getElementById('dashboard-welcome-name');
+                if (dbWelcome) dbWelcome.textContent = 'שלום, ' + cName + ' 👋';
+                
+                var sbAvatar = document.getElementById('sidebar-client-avatar');
+                if (sbAvatar) sbAvatar.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(cName) + '&background=random';
+                
+                // Safe to call here because the second script block has been parsed
+                if (typeof initLiveChats === 'function') {
+                    initLiveChats();
+                }
+            });
+        } else {
+            localStorage.removeItem('client_auth_v2');
+        }
+    }
+    // Force light theme on client portal
+    document.documentElement.removeAttribute('data-theme');
+    localStorage.setItem('theme', 'light');
+    </script>
+
+        <button id="themeToggle" onclick="toggleTheme()" style="
+            position:fixed;top:20px;left:20px;z-index:100;
+            width:40px;height:40px;border-radius:50%;
+            background:var(--surface-color-light);border:1px solid var(--surface-border);
+            color:var(--text-secondary);font-size:18px;cursor:pointer;
+            display:flex;align-items:center;justify-content:center;
+            transition:all 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.08);
+        " title="מצב כהה/בהיר">☀️</button>
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="logo">
+            <div class="logo-icon"><i class="ph ph-robot"></i></div>
+            OnStaffAI <span style="font-size: 12px; font-weight: normal; color: var(--text-secondary); margin-right: 10px;">| פורטל אישי</span>
+        </div>
+        <nav>
+            <div class="nav-item active" onclick="switchTab('dashboard', this)">
+                <i class="ph ph-chart-line-up"></i> נתוני שימוש ודאשבורד
+            </div>
+            <div class="nav-item" onclick="switchTab('agents', this)">
+                <i class="ph ph-users-three"></i> ניהול הסוכנים שלי
+            </div>
+            <div class="nav-item" onclick="switchTab('knowledge', this)">
+                <i class="ph ph-brain"></i> מאגר ידע (שאלות ותשובות)
+            </div>
+            <div class="nav-item" onclick="switchTab('integration', this)">
+                <i class="ph ph-code"></i> קוד להטמעה והוראות
+            </div>
+            <div class="nav-item" id="live-nav" onclick="switchTab('live-chats', this)">
+                <i class="ph ph-chats"></i> שיחות חיות
+                <span id="live-badge" style="display:none;margin-right:auto;" class="badge-red">0</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('chat-history', this)">
+                <i class="ph ph-clock-counter-clockwise"></i> היסטוריית שיחות
+            </div>
+        </nav>
+        
+        <div style="margin-top: auto; padding-top: 20px; border-top: 1px solid var(--surface-border);">
+            <div class="nav-item" style="margin: 0; color: var(--text-secondary);">
+                <img id="sidebar-client-avatar" src="https://ui-avatars.com/api/?name=User&background=random" style="border-radius: 50%; width: 32px; height: 32px; margin-left: 10px;">
+                <span id="sidebar-client-name">טוען...</span>
+            </div>
+            <button onclick="clientLogout()" style="width:100%;margin-top:8px;padding:8px;border:1px solid var(--surface-border);border-radius:8px;background:transparent;color:var(--text-secondary);cursor:pointer;font-family:'Heebo',sans-serif;font-size:12px;transition:all .15s;" onmouseover="this.style.background='#fef2f2';this.style.color='#dc2626'" onmouseout="this.style.background='transparent';this.style.color='var(--text-secondary)'">
+                <i class="ph ph-sign-out"></i> התנתק
+            </button>
+            <div style="text-align: center; margin-top: 8px;">
+                <button class="btn btn-outline" style="width: 100%; font-size: 14px;" onclick="openTechSupport()"><i class="ph ph-headset"></i> פניה לתמיכה טכנית</button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="section active">
+            <div class="header">
+                <h1 id="dashboard-welcome-name">שלום, טוען... 👋</h1>
+                <p style="color: var(--text-secondary);">הנה סקירה של ביצועי הסוכנים שלך החודש.</p>
+            </div>
+            
+            <div class="grid">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon"><i class="ph ph-chat-circle-dots"></i></div>
+                    </div>
+                    <div class="card-title">סה"כ שיחות החודש</div>
+                    <div class="card-value" id="dashTotalChats">...</div>
+                    <div style="color: var(--text-secondary); font-size: 12px; margin-top: 8px;">מתחילת החודש הנוכחי</div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon" style="background: rgba(16, 185, 129, 0.1); color: #10b981;"><i class="ph ph-calendar-check"></i></div>
+                    </div>
+                    <div class="card-title">פגישות שתואמו (Calendly)</div>
+                    <div class="card-value">-</div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-icon" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;"><i class="ph ph-user-plus"></i></div>
+                    </div>
+                    <div class="card-title">לידים חדשים שנאספו</div>
+                    <div class="card-value">-</div>
+                </div>
+            </div>
+
+            <div class="qa-container" style="padding: 0;">
+                <h3 style="padding: 24px; border-bottom: 1px solid var(--surface-border);">השיחות האחרונות של הסוכנים</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>תאריך ושעה</th>
+                            <th>סוכן מטפל</th>
+                            <th>ערוץ</th>
+                            <th>תוצאה</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dashRecentChatsBody">
+                        <tr><td colspan="4" style="text-align:center;color:var(--text-secondary);padding:20px;">טוען נתונים...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Agents Management -->
+        <section id="agents" class="section">
+            <div class="header">
+                <div>
+                    <h1>הסוכנים הפעילים שלך</h1>
+                    <p style="color:var(--text-secondary);margin-top:4px;">ניהול הגדרות אישיות לכל סוכן</p>
+                </div>
+            </div>
+            <div class="grid" id="agents-grid">
+                <!-- Dynamically populated by renderAgentsList() -->
+                <div style="grid-column: 1 / -1; text-align: center; color: var(--text-secondary); padding: 40px;">טוען סוכנים...</div>
+            </div>
+        </section>
+
+        <!-- Knowledge Base -->
+        <section id="knowledge" class="section">
+            <div class="header">
+                <h1>מאגר ידע (המוח של הסוכנים)</h1>
+                <button class="btn"><i class="ph ph-upload-simple"></i> העלה קובץ PDF</button>
+            </div>
+            
+            <div id="globalKnowledgeContent">
+                <div style="text-align:center;padding:40px;color:var(--text-secondary);">טוען נתונים מהענן...</div>
+            </div>
+        </section>
+
+        <!-- Integrations & Instructions -->
+        <!-- Chat History Section -->
+        <section id="chat-history" class="section">
+            <div class="header">
+                <div>
+                    <h1><i class="ph ph-clock-counter-clockwise" style="color:var(--primary-color);"></i> היסטוריית שיחות</h1>
+                    <p style="color:var(--text-secondary);font-size:13px;margin-top:4px;">כל השיחות שהסתיימו + תוכן מלא</p>
+                </div>
+            </div>
+            <div style="display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap;">
+                <input id="hist-search-text" placeholder="🔍 חיפוש..." style="flex:1;min-width:180px;padding:10px 14px;border:1px solid var(--surface-border);border-radius:10px;font-family:'Heebo',sans-serif;font-size:14px;background:var(--surface-color);color:var(--text-primary);" oninput="filterClientHistory()">
+                <select id="hist-search-agent" style="width:180px;padding:10px 14px;border:1px solid var(--surface-border);border-radius:10px;font-family:'Heebo',sans-serif;font-size:14px;background:var(--surface-color);color:var(--text-primary);" onchange="filterClientHistory()">
+                    <option value="">כל הסוכנים</option>
+                    <option value="customer-service">שירות לקוחות</option>
+                    <option value="sales">מכירות</option>
+                    <option value="scheduler">תיאום פגישות</option>
+                    <option value="hr">משאבי אנוש</option>
+                    <option value="tech-support">תמיכה טכנית</option>
+                    <option value="onboarding">אונבורדינג</option>
+                </select>
+                <input id="hist-search-date" type="date" style="width:160px;padding:10px 14px;border:1px solid var(--surface-border);border-radius:10px;font-family:'Heebo',sans-serif;font-size:14px;background:var(--surface-color);color:var(--text-primary);" onchange="filterClientHistory()">
+            </div>
+            <div style="display:flex;gap:0;height:calc(100vh - 240px);background:var(--surface-color);border:1px solid var(--surface-border);border-radius:14px;overflow:hidden;">
+                <div id="hist-list" style="width:380px;flex-shrink:0;border-left:1px solid var(--surface-border);overflow-y:auto;">
+                    <div style="padding:24px;color:var(--text-secondary);font-size:13px;text-align:center;">⏳ טוען...</div>
+                </div>
+                <div id="hist-detail" style="flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:10px;">
+                    <div style="flex:1;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);flex-direction:column;gap:12px;">
+                        <i class="ph ph-chat-text" style="font-size:48px;opacity:0.3;"></i>
+                        <div>בחר שיחה לצפייה בתוכן</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="integration" class="section">
+            <div class="header">
+                <h1>הטמעת הסוכן באתר שלך</h1>
+            </div>
+            
+            <div class="qa-container">
+                <p style="margin-bottom: 20px;">כדי שהסוכן יופיע באתר שלך כבועת צ'אט (Chatbot), עליך להעתיק את הקוד הבא ולהדביק אותו בקוד האתר שלך, ממש לפני סגירת תגית ה-<code>&lt;/body&gt;</code>.</p>
+                
+                <div class="step-container">
+                    <div class="step">
+                        <h3>שלב 1: העתק את הסקריפט</h3>
+                        <div class="code-block" id="integration-code-container">
+                            <button class="copy-btn" onclick="showToast('הקוד הועתק!', 'success')">העתק</button>
+                            &lt;script src="https://onstaffai.com/widget/agent.js" data-client-id="<span id="integration-client-id">alpha-company-1234</span>" defer&gt;&lt;/script&gt;
+                        </div>
+                    </div>
+                    
+                    <div class="step">
+                        <h3>שלב 2: הדבק באתר</h3>
+                        <p style="color: var(--text-secondary); margin-top: 10px;">אם אתה משתמש ב-Wordpress, ניתן להשתמש בתוסף Insert Headers and Footers. ב-Wix או Shopify חפש בהגדרות "Custom Code".</p>
+                    </div>
+                    
+                    <div class="step">
+                        <h3>שלב 3: ודא שהסוכן עובד</h3>
+                        <p style="color: var(--text-secondary); margin-top: 10px;">כנס לאתר שלך ורענן את העמוד (Ctrl+F5). בועת הצ'אט אמורה להופיע בפינה הימנית או השמאלית התחתונה.</p>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+
+
+        <!-- Live Chats Section -->
+        <section id="live-chats" class="section">
+            <div class="header">
+                <div><h1>שיחות חיות <span id="lc-badge-h" style="font-size:16px;background:#ef4444;color:#fff;padding:2px 10px;border-radius:10px;display:none;"></span></h1>
+                <p style="color:var(--text-secondary);margin-top:4px;">מעקב בזמן אמת + השתלטות על שיחות</p></div>
+            </div>
+            <div id="live-chats-panel" style="background:var(--surface-color);border:1px solid var(--surface-border);border-radius:14px;overflow:hidden;">
+                <div id="sessions-list"><div style="padding:24px;color:var(--text-secondary);font-size:13px;text-align:center;">⏳ טוען שיחות...</div></div>
+                <div id="session-detail">
+                    <div id="no-session-selected" style="flex:1;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);flex-direction:column;gap:12px;padding:40px;">
+                        <i class="ph ph-chats" style="font-size:48px;opacity:0.3;"></i>
+                        <div>בחר שיחה מהרשימה לצפייה</div>
+                    </div>
+                    <div id="operator-messages"></div>
+                    <div id="operator-reply-area">
+                        <div style="display:flex;gap:8px;margin-bottom:10px;">
+                            <button id="btn-takeover" onclick="takeoverSession()" style="background:#10b981;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-family:var(--font-main);font-size:13px;">✋ השתלט על השיחה</button>
+                            <button onclick="closeSession()" style="background:#ef4444;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-family:var(--font-main);font-size:13px;">✖ סגור שיחה</button>
+                            <button id="btn-mark-unread" onclick="markUnread()" style="background:#f3f4f6;color:#374151;border:1px solid #d1d5db;padding:8px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-family:var(--font-main);font-size:13px;">👁️ סמן כלא נקרא</button>
+                        </div>
+                        <div id="operator-reply-row" style="display:none;">
+                            <input id="operator-input" placeholder="הקלד תשובה כנציג אנושי..." onkeydown="if(event.key==='Enter')sendOperatorMsg()">
+                            <button class="btn-send-op" onclick="sendOperatorMsg()">שלח</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Client Agent Settings Modal -->
+        <div id="clientAgentModal" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,0.35);backdrop-filter:blur(4px);" onclick="if(event.target===this)closeClientModal()">
+          <div style="position:absolute;left:0;top:0;bottom:0;width:600px;max-width:95vw;background:var(--surface-color);border-right:1px solid var(--surface-border);overflow-y:auto;animation:slideIn 0.3s ease;">
+            <div style="padding:24px 28px;border-bottom:1px solid var(--surface-border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--surface-color);z-index:1;">
+              <div>
+                <div id="clientAgentName" style="font-family:'Outfit',sans-serif;font-size:20px;font-weight:700;color:var(--text-primary);"></div>
+              </div>
+              <button onclick="closeClientModal()" style="background:var(--surface-color-light);border:1px solid var(--surface-border);border-radius:50%;width:34px;height:34px;font-size:16px;cursor:pointer;color:var(--text-secondary);">✕</button>
+            </div>
+            <div style="padding:28px;">
+              <div id="clientAgentContent"></div>
+            </div>
+          </div>
+        </div>
+    </main>
+
+    <script>
+        function switchTab(tabId, el) {
+            document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+            const section = document.getElementById(tabId);
+            if (section) section.classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+            if (el) el.classList.add('active');
+            if (tabId === 'live-chats') initLiveChats();
+        }
+
+        // ─── LIVE CHATS ───
+        var _currentSessionId = null;
+        var _sessionsListener = null;
+        var _messagesListener = null;
+        var _liveSessions = {};
+        var _lcInited = false;
+
+        function initLiveChats() {
+            if (_lcInited) return;
+            _lcInited = true;
+            var db = window._db;
+            if (!db) { setTimeout(initLiveChats, 600); return; }
+            var cId = sessionStorage.getItem('client_auth');
+            if (!cId) return;
+            _sessionsListener = db.collection('agentSessions')
+                .where('clientKey', '==', cId)
+                .onSnapshot(function(snap) {
+                    snap.docChanges().forEach(function(ch) {
+                        var d = ch.doc.data();
+                        var validStatus = ['active','awaiting_human','human_active'].includes(d.status);
+                        if (ch.type === 'removed' || !validStatus) { 
+                            delete _liveSessions[ch.doc.id]; 
+                        } else {
+                            _liveSessions[ch.doc.id] = Object.assign({ _id: ch.doc.id }, d); 
+                        }
+                    });
+                    renderSessionsList();
+                }, function(error) {
+                    console.error("Live chats error:", error);
+                    document.getElementById('sessions-list').innerHTML = '<div style="padding:24px;color:red;font-size:13px;text-align:center;">שגיאה בטעינת שיחות: ' + error.message + '</div>';
+                });
+        }
+
+        function openTechSupport() {
+            var iframeContainer = document.getElementById('tech-support-widget');
+            if (!iframeContainer) {
+                iframeContainer = document.createElement('div');
+                iframeContainer.id = 'tech-support-widget';
+                iframeContainer.style.position = 'fixed';
+                iframeContainer.style.bottom = '20px';
+                iframeContainer.style.left = '20px';
+                iframeContainer.style.width = '380px';
+                iframeContainer.style.height = '600px';
+                iframeContainer.style.zIndex = '99999';
+                iframeContainer.style.boxShadow = '0 10px 40px rgba(0,0,0,0.2)';
+                iframeContainer.style.borderRadius = '20px';
+                iframeContainer.style.overflow = 'hidden';
+                
+                var cName = sessionStorage.getItem('client_name') || 'לקוח';
+                var cPhone = sessionStorage.getItem('client_phone') || '050-1234567';
+                var iframe = document.createElement('iframe');
+                iframe.src = 'chat.html?v=' + Date.now() + '&agent=tech-support&key=onstaffai&clientName=' + encodeURIComponent(cName) + '&clientPhone=' + encodeURIComponent(cPhone);
+                iframe.style.width = '100%';
+                iframe.style.height = '100%';
+                iframe.style.border = 'none';
+                
+                iframeContainer.appendChild(iframe);
+                document.body.appendChild(iframeContainer);
+                
+                window.addEventListener('message', function(e) {
+                    if (e.data && e.data.type === 'onstaffai-close') {
+                        iframeContainer.style.display = 'none';
+                    }
+                });
+            } else {
+                iframeContainer.style.display = iframeContainer.style.display === 'none' ? 'block' : 'none';
+            }
+        }
+
+        var AGENT_LABELS = {'customer-service':'מאיה — שירות','sales':'כרמלית — מכירות','scheduler':'נועה — תיאום','hr':'רוני — משאבים'};
+
+        function renderSessionsList() {
+            var list = document.getElementById('sessions-list');
+            var sessions = Object.values(_liveSessions).sort(function(a,b) {
+                var tA = a.lastUpdate && a.lastUpdate.toDate ? a.lastUpdate.toDate().getTime() : (a.sessionStart && a.sessionStart.toDate ? a.sessionStart.toDate().getTime() : 0);
+                var tB = b.lastUpdate && b.lastUpdate.toDate ? b.lastUpdate.toDate().getTime() : (b.sessionStart && b.sessionStart.toDate ? b.sessionStart.toDate().getTime() : 0);
+                return tB - tA;
+            });
+            var unreadCount = sessions.filter(function(s){ return s.unread; }).length;
+            var badge = document.getElementById('live-badge');
+            var badgeH = document.getElementById('lc-badge-h');
+            if (unreadCount > 0) {
+                badge.textContent = unreadCount; badge.style.display = '';
+                badgeH.textContent = unreadCount + ' שיחות לא נקראו'; badgeH.style.display = '';
+            } else { badge.style.display = 'none'; badgeH.style.display = 'none'; }
+            
+            if (_currentSessionId && !_liveSessions[_currentSessionId]) {
+                _currentSessionId = null;
+                document.getElementById('no-session-selected').style.display = 'flex';
+                document.getElementById('operator-messages').style.display = 'none';
+                document.getElementById('operator-reply-area').style.display = 'none';
+                if(_messagesListener) { _messagesListener(); _messagesListener=null; }
+            }
+
+            if (!sessions.length) {
+                list.innerHTML = '<div style="padding:24px;color:var(--text-secondary);font-size:13px;text-align:center;"><i class="ph ph-chats" style="font-size:32px;opacity:0.3;display:block;margin-bottom:8px;"></i>אין שיחות פעילות</div>';
+                return;
+            }
+            list.innerHTML = sessions.map(function(s) {
+                var isAwaiting = s.status === 'awaiting_human';
+                var isHuman = s.status === 'human_active';
+                var statusBadge = isAwaiting
+                    ? '<span class="badge-red">ממתין לנציג</span>'
+                    : isHuman ? '<span style="background:#10b981;color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;font-weight:700;">נציג פעיל</span>'
+                    : '<span style="background:#6b7280;color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;">פעיל</span>';
+                var selected = s._id === _currentSessionId ? ' selected' : '';
+                var awaiting = isAwaiting ? ' awaiting' : '';
+                var ts = '';
+                if (s.sessionStart && s.sessionStart.toDate) {
+                    var d = s.sessionStart.toDate();
+                    var now = new Date();
+                    var today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                    var yesterday = new Date(today);
+                    yesterday.setDate(yesterday.getDate() - 1);
+                    var sessionDate = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+                    
+                    var timeStr = d.toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'});
+                    if (sessionDate.getTime() === today.getTime()) {
+                        ts = timeStr;
+                    } else if (sessionDate.getTime() === yesterday.getTime()) {
+                        ts = 'אתמול ' + timeStr;
+                    } else {
+                        ts = d.toLocaleDateString('he-IL',{day:'2-digit',month:'2-digit'}) + ' ' + timeStr;
+                    }
+                }
+                var unreadDot = s.unread ? '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#6366f1;margin-right:6px;"></span>' : '';
+                var unreadBold = s.unread ? ';font-weight:700;background:rgba(99,102,241,0.05)' : '';
+                return '<div class="session-item'+selected+awaiting+'" onclick="selectSession(\''+s._id+'\')" style="'+unreadBold+'">'  
+                    + '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px;">'
+                    + '<div style="display:flex;flex-direction:column;gap:2px;">'
+                    + '<span style="font-weight:700;font-size:13px;color:var(--text-primary);">'+(s.customerName||'לקוח')+'</span>'
+                    + (s.customerPhone ? '<span style="font-size:12px;color:var(--text-secondary);">'+s.customerPhone+'</span>' : '')
+                    + '<span style="font-size:12px;color:var(--primary-color);">'+(AGENT_LABELS[s.agentId]||s.agentId||'סוכן')+unreadDot+'</span>'
+                    + '</div>'
+                    + '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">'
+                    + statusBadge
+                    + '<span style="font-size:11px;color:var(--text-secondary);">'+ts+'</span>'
+                    + '</div>'
+                    + '</div>'
+                    + '<div style="font-size:12px;color:var(--text-secondary);margin-top:6px;background:var(--surface-color-light);padding:6px;border-radius:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+(s.lastUserMsg||'').slice(0,50)+'</div>'
+                    + '</div>';
+            }).join('');
+        }
+
+        function selectSession(id) {
+            _currentSessionId = id;
+            if (_liveSessions[id] && _liveSessions[id].unread) {
+                _liveSessions[id].unread = false;
+                window._db.collection('agentSessions').doc(id).update({ unread: false }).catch(function(){});
+            }
+            renderSessionsList();
+            document.getElementById('no-session-selected').style.display = 'none';
+            document.getElementById('operator-messages').style.display = 'flex';
+            document.getElementById('operator-reply-area').style.display = 'block';
+            var s = _liveSessions[id];
+            if (s) {
+                document.getElementById('btn-takeover').style.display = s.status === 'human_active' ? 'none' : '';
+                document.getElementById('operator-reply-row').style.display = s.status === 'human_active' ? 'flex' : 'none';
+            }
+            if (_messagesListener) { _messagesListener(); }
+            document.getElementById('operator-messages').innerHTML = '';
+            _messagesListener = window._db.collection('agentMessages').doc(id)
+                .collection('messages')
+                .onSnapshot(function(snap) {
+                    var el = document.getElementById('operator-messages');
+                    var allMsgs = [];
+                    snap.forEach(function(d) { allMsgs.push(d.data()); });
+                    allMsgs.sort(function(a,b) {
+                        var ta = a.ts && a.ts.toMillis ? a.ts.toMillis() : 0;
+                        var tb = b.ts && b.ts.toMillis ? b.ts.toMillis() : 0;
+                        return ta - tb;
+                    });
+                    el.innerHTML = '';
+                    allMsgs.forEach(function(m) {
+                        var cls = m.sender === 'user' ? 'op-msg-user' : m.sender === 'human' ? 'op-msg-human' : 'op-msg-agent';
+                        var label = m.sender === 'human' ? '<div style="font-size:10px;color:#1d4ed8;margin-bottom:2px;">נציג</div>' : '';
+                        el.innerHTML += '<div class="'+cls+'">'+label+(m.text||'')+'</div>';
+                    });
+                    el.scrollTop = el.scrollHeight;
+                });
+        }
+
+        async function takeoverSession() {
+            if (!_currentSessionId) return;
+            try {
+                await window._db.collection('agentSessions').doc(_currentSessionId).update({
+                    status: 'human_active',
+                    humanTakeoverBy: 'operator',
+                    humanTakeoverAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                document.getElementById('btn-takeover').style.display = 'none';
+                document.getElementById('operator-reply-row').style.display = 'flex';
+            } catch(e) { showToast('שגיאה: ' + (typeof e !== 'undefined' ? e.message : 'לא ידוע'), 'error'); }
+        }
+
+        async function sendOperatorMsg() {
+            var inp = document.getElementById('operator-input');
+            var text = inp.value.trim();
+            if (!text || !_currentSessionId) return;
+            inp.value = '';
+            try {
+                await window._db.collection('agentMessages').doc(_currentSessionId)
+                    .collection('messages').add({
+                        text: text, sender: 'human',
+                        ts: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                await window._db.collection('agentSessions').doc(_currentSessionId).update({
+                    lastUpdate: firebase.firestore.FieldValue.serverTimestamp(),
+                    followUpSent: false
+                });
+            } catch(e) { showToast('שגיאה: ' + (typeof e !== 'undefined' ? e.message : 'לא ידוע'), 'error'); }
+        }
+
+        async function closeSession() {
+            if (!_currentSessionId) return;
+            if (!confirm('לסגור את השיחה? הלקוח יקבל הודעה שהשיחה הסתיימה.')) return;
+            try {
+                await window._db.collection('agentSessions').doc(_currentSessionId).update({ status: 'closed' });
+                _currentSessionId = null;
+                document.getElementById('no-session-selected').style.display = '';
+                document.getElementById('operator-messages').style.display = 'none';
+                document.getElementById('operator-reply-area').style.display = 'none';
+            } catch(e) {}
+        }
+
+        async function markUnread() {
+            if (!_currentSessionId) return;
+            try {
+                await window._db.collection('agentSessions').doc(_currentSessionId).update({ unread: true });
+                _currentSessionId = null;
+                document.getElementById('no-session-selected').style.display = 'flex';
+                document.getElementById('operator-messages').style.display = 'none';
+                document.getElementById('operator-reply-area').style.display = 'none';
+                if(_messagesListener) { _messagesListener(); _messagesListener=null; }
+                renderSessionsList();
+            } catch(e) { showToast('שגיאה: ' + (typeof e !== 'undefined' ? e.message : 'לא ידוע'), 'error'); }
+        }
+    </script>
+
+    <script>
+        function toggleTheme() {
+            const html = document.documentElement;
+            const btn = document.getElementById('themeToggle');
+            if (html.getAttribute('data-theme')==='dark') {
+                html.removeAttribute('data-theme'); btn.textContent='☀️';
+                localStorage.setItem('theme','light');
+            } else {
+                html.setAttribute('data-theme','dark'); btn.textContent='🌙';
+                localStorage.setItem('theme','dark');
+            }
+        }
+        (function(){
+            const s=localStorage.getItem('theme'), b=document.getElementById('themeToggle');
+            if(s==='dark'){document.documentElement.setAttribute('data-theme','dark'); if(b)b.textContent='🌙';}
+        })();
+
+        // --- Global Knowledge Base Logic ---
+        window._globalRagData = { qa: [], docs: [] };
+        window._allAgentsRagData = [];
+        
+        async function loadGlobalKnowledge() {
+            const cId = sessionStorage.getItem('client_auth');
+            if (!cId) return;
+            try {
+                const docRef = window._db.collection('companies').doc(cId).collection('globalData').doc('rag');
+                const docSnap = await docRef.get();
+                if (docSnap.exists) {
+                    window._globalRagData = docSnap.data();
+                    if (!window._globalRagData.qa) window._globalRagData.qa = [];
+                    if (!window._globalRagData.docs) window._globalRagData.docs = [];
+                    if (!window._globalRagData.urls) window._globalRagData.urls = [];
+                    window._globalRagData.docs = window._globalRagData.docs.map(d => typeof d === 'string' ? { title: 'מסמך כללי', content: d } : d);
+                }
+
+                window._allAgentsRagData = [];
+                const agentsSnap = await window._db.collection('companies').doc(cId).collection('agentData').get();
+                agentsSnap.forEach(snap => {
+                    const d = snap.data();
+                    if (d.qa || d.docs || d.urls) {
+                        if (!d.qa) d.qa = [];
+                        if (!d.docs) d.docs = [];
+                        if (!d.urls) d.urls = [];
+                        d.docs = d.docs.map(docItem => typeof docItem === 'string' ? { title: 'מסמך סוכן', content: docItem } : docItem);
+                        const agentNameStr = AGENT_LABELS[snap.id] || 'סוכן ' + snap.id;
+                        window._allAgentsRagData.push({
+                            agentId: snap.id,
+                            agentName: agentNameStr,
+                            ragData: d
+                        });
+                    }
+                });
+
+                renderGlobalKnowledge();
+            } catch (e) {
+                console.error("Error loading global knowledge", e);
+                document.getElementById('globalKnowledgeContent').innerHTML = '<div style="color:red;padding:20px;">שגיאה בטעינת המאגר הגלובלי.</div>';
+            }
+        }
+
+        async function saveGlobalKnowledgeToFirestore() {
+            const cId = sessionStorage.getItem('client_auth');
+            if (!cId) return;
+            try {
+                const docRef = window._db.collection('companies').doc(cId).collection('globalData').doc('rag');
+                await docRef.set(window._globalRagData, { merge: true });
+                renderGlobalKnowledge();
+            } catch(e) {
+                showToast('שגיאה: ' + (typeof e !== 'undefined' ? e.message : 'לא ידוע'), 'error');
+            }
+        }
+
+        async function deleteAgentItemFromGlobal(agentId, listName, idx) {
+            const cId = sessionStorage.getItem('client_auth');
+            if (!cId) return;
+            let agentDataObj = window._allAgentsRagData.find(a => a.agentId === agentId);
+            if (!agentDataObj) return;
+            agentDataObj.ragData[listName].splice(idx, 1);
+            try {
+                await window._db.collection('companies').doc(cId).collection('agentData').doc(agentId).update({
+                    [listName]: agentDataObj.ragData[listName]
+                });
+                renderGlobalKnowledge();
+            } catch (e) {
+                showToast('שגיאה במחיקה: ' + e.message, 'error');
+            }
+        }
+        window.deleteAgentQAFromGlobal = (agentId, idx) => deleteAgentItemFromGlobal(agentId, 'qa', idx);
+        window.deleteAgentDocFromGlobal = (agentId, idx) => deleteAgentItemFromGlobal(agentId, 'docs', idx);
+        window.deleteAgentUrlFromGlobal = (agentId, idx) => deleteAgentItemFromGlobal(agentId, 'urls', idx);
+
+        window.rescanAgentUrlFromGlobal = async (agentId, idx, url) => {
+            const cId = sessionStorage.getItem('client_auth');
+            if (!cId) return;
+            let agentDataObj = window._allAgentsRagData.find(a => a.agentId === agentId);
+            if (!agentDataObj) return;
+            
+            showToast('מתחיל סריקה מחדש של האתר...', 'success');
+            try {
+                var scrapeWebsite = firebase.functions().httpsCallable('scrapeWebsite');
+                var result = await scrapeWebsite({ url: url });
+                var data = result.data;
+                
+                agentDataObj.ragData.urls[idx].content = data.content;
+                agentDataObj.ragData.urls[idx].pagesScraped = data.pagesScraped;
+                agentDataObj.ragData.urls[idx].lastScanned = new Date().toISOString();
+                
+                await window._db.collection('companies').doc(cId).collection('agentData').doc(agentId).update({
+                    urls: agentDataObj.ragData.urls
+                });
+                showToast(`האתר נסרק מחדש בהצלחה (${data.pagesScraped} עמודים)`, 'success');
+                renderGlobalKnowledge();
+            } catch (e) {
+                console.error(e);
+                showToast('שגיאה בסריקה החוזרת: ' + (typeof e !== 'undefined' ? e.message : 'לא ידוע'), 'error');
+            }
+        };
+
+        function renderGlobalKnowledge() {
+            const data = window._globalRagData;
+            const container = document.getElementById('globalKnowledgeContent');
+            if (!container) return;
+
+            let allQA = [];
+            data.qa.forEach((item, i) => allQA.push({ isGlobal: true, item: item, idx: i }));
+            window._allAgentsRagData.forEach(agent => {
+                if(agent.ragData.qa) agent.ragData.qa.forEach((item, i) => allQA.push({ isGlobal: false, item: item, idx: i, agentName: agent.agentName, agentId: agent.agentId }));
+            });
+
+            let qaListHtml = '';
+            if (allQA.length > 0) {
+                qaListHtml = '<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">';
+                allQA.forEach((qa) => {
+                    let badge = qa.isGlobal ? '<span style="background:var(--primary-color);color:#fff;padding:2px 6px;border-radius:4px;font-size:11px;margin-right:6px;">כללי</span>' : `<span style="background:var(--surface-border);color:var(--text-secondary);padding:2px 6px;border-radius:4px;font-size:11px;margin-right:6px;">סוכן: ${qa.agentName}</span>`;
+                    let delAction = qa.isGlobal ? `deleteGlobalQA(${qa.idx})` : `deleteAgentQAFromGlobal('${qa.agentId}', ${qa.idx})`;
+                    qaListHtml += `<div style="background:var(--surface-color);border:1px solid var(--surface-border);border-radius:8px;padding:12px;font-size:14px;display:flex;justify-content:space-between;align-items:flex-start;">
+                        <div>${badge}<br><strong style="color:var(--primary-color);">ש:</strong> ${qa.item.q}<br><strong style="color:var(--text-secondary);">ת:</strong> ${qa.item.a}</div>
+                        <button onclick="openConfirmModal('מחיקת שאלה', 'האם אתה בטוח שברצונך למחוק שאלה זו ממאגר הידע?', () => ${delAction})" style="background:none;border:none;color:var(--danger, #ef4444);cursor:pointer;font-size:18px;" title="מחק"><i class="ph ph-trash"></i></button>
+                    </div>`;
+                });
+                qaListHtml += '</div>';
+            } else {
+                qaListHtml = '<p style="font-size:14px;color:var(--text-secondary);margin-bottom:16px;">אין שאלות ותשובות שמורות במאגר.</p>';
+            }
+
+            const qaTitle = allQA.length > 0 ? `💬 שאלות ותשובות (Q&A) מרוכזות (${allQA.length})` : `💬 שאלות ותשובות (Q&A)`;
+            const ragQASection = `<div style="background:var(--surface-color-light);border:1px solid var(--surface-border);border-radius:12px;padding:24px;margin-bottom:24px;">
+              <h3 style="color:var(--text-primary);margin-bottom:8px;">${qaTitle}</h3>
+              <p style="color:var(--text-secondary);font-size:14px;margin-bottom:16px;">כל הסוכנים של העסק ישתמשו במאגר זה על מנת לענות בנושאים שונים ללקוחות.</p>
+              ${qaListHtml}
+              <div style="border-top:1px dashed var(--surface-border);padding-top:16px;">
+                  <h4 style="margin-bottom:12px;color:var(--text-primary);">הוסף שאלה ותשובה חדשה (למאגר הכללי)</h4>
+                  <input id="global-qa-q" style="width:100%;padding:12px;border:1px solid var(--surface-border);border-radius:8px;background:var(--surface-color);color:var(--text-primary);margin-bottom:12px;font-family:'Heebo',sans-serif;" placeholder="שאלה פוטנציאלית מלקוח...">
+                  <textarea id="global-qa-a" style="width:100%;padding:12px;border:1px solid var(--surface-border);border-radius:8px;background:var(--surface-color);color:var(--text-primary);resize:vertical;min-height:80px;font-family:'Heebo',sans-serif;" placeholder="התשובה הרשמית שהסוכן יתן..."></textarea>
+                  <button onclick="addGlobalQA()" style="margin-top:12px;background:var(--surface-color);border:1px solid var(--primary-color);color:var(--primary-color);padding:10px 20px;border-radius:8px;font-weight:600;cursor:pointer;">+ הוסף למאגר הכללי</button>
+              </div>
+            </div>`;
+
+            let allDocs = [];
+            data.docs.forEach((doc, i) => allDocs.push({ isGlobal: true, doc: doc, idx: i }));
+            window._allAgentsRagData.forEach(agent => {
+                if(agent.ragData.docs) agent.ragData.docs.forEach((doc, i) => allDocs.push({ isGlobal: false, doc: doc, idx: i, agentName: agent.agentName, agentId: agent.agentId }));
+            });
+
+            let docsListHtml = '';
+            if (allDocs.length > 0) {
+                docsListHtml = '<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">';
+                allDocs.forEach((d) => {
+                    const title = d.doc.title || ('מסמך');
+                    let badge = d.isGlobal ? '<span style="background:var(--primary-color);color:#fff;padding:2px 6px;border-radius:4px;font-size:11px;margin-right:6px;">כללי</span>' : `<span style="background:var(--surface-border);color:var(--text-secondary);padding:2px 6px;border-radius:4px;font-size:11px;margin-right:6px;">סוכן: ${d.agentName}</span>`;
+                    let delAction = d.isGlobal ? `deleteGlobalDoc(${d.idx})` : `deleteAgentDocFromGlobal('${d.agentId}', ${d.idx})`;
+                    docsListHtml += `<div style="background:var(--surface-color);border:1px solid var(--surface-border);border-radius:8px;padding:12px;font-size:14px;display:flex;justify-content:space-between;align-items:center;">
+                        <div>${badge}<i class="ph ph-file-text" style="color:var(--text-secondary);margin-left:6px;"></i> <strong>${title}</strong> <span style="color:var(--text-secondary);font-size:12px;">(${Math.round((d.doc.content||'').length / 1024)}KB)</span></div>
+                        <button onclick="openConfirmModal('מחיקת מסמך', 'האם אתה בטוח שברצונך למחוק מסמך זה ממאגר הידע?', () => ${delAction})" style="background:none;border:none;color:var(--danger, #ef4444);cursor:pointer;font-size:18px;" title="מחק"><i class="ph ph-trash"></i></button>
+                    </div>`;
+                });
+                docsListHtml += '</div>';
+            } else {
+                docsListHtml = '<p style="font-size:14px;color:var(--text-secondary);margin-bottom:16px;">לא הועלו מסמכי חברה.</p>';
+            }
+
+            const ragDocsSection = `<div style="background:var(--surface-color-light);border:1px solid var(--surface-border);border-radius:12px;padding:24px;margin-bottom:24px;">
+              <h3 style="color:var(--text-primary);margin-bottom:8px;">📄 מסמכי חברה ומדיניות (PDF, Word, TXT)</h3>
+              <p style="color:var(--text-secondary);font-size:14px;margin-bottom:16px;">העלה תקנונים, קטלוגים ונהלים. הסוכנים ישתמשו במסמכים אלו כעובדות מוגמרות.</p>
+              ${docsListHtml}
+              <div style="border-top:1px dashed var(--surface-border);padding-top:16px;">
+                  <h4 style="margin-bottom:12px;color:var(--text-primary);">העלה מסמך חברה חדש (למאגר הכללי)</h4>
+                  <input type="file" id="global-doc-file" accept=".txt,.pdf,.docx" style="margin-bottom:12px;font-size:14px;color:var(--text-secondary);">
+                  <div id="global-doc-status" style="font-size:13px;color:var(--primary-color);margin-bottom:10px;display:none;">מפענח מסמך... זה עשוי לקחת כמה שניות.</div>
+                  <button onclick="uploadGlobalDoc()" style="background:var(--surface-color);border:1px solid var(--primary-color);color:var(--primary-color);padding:10px 20px;border-radius:8px;font-weight:600;cursor:pointer;"><i class="ph ph-upload-simple"></i> העלה למאגר הכללי</button>
+              </div>
+            </div>`;
+
+            let allUrls = [];
+            data.urls.forEach((u, i) => allUrls.push({ isGlobal: true, u: u, idx: i }));
+            window._allAgentsRagData.forEach(agent => {
+                if(agent.ragData.urls) agent.ragData.urls.forEach((u, i) => allUrls.push({ isGlobal: false, u: u, idx: i, agentName: agent.agentName, agentId: agent.agentId }));
+            });
+
+            let urlsListHtml = '';
+            if (allUrls.length > 0) {
+                urlsListHtml = '<div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">';
+                allUrls.forEach((urlObj) => {
+                    let u = urlObj.u;
+                    let scannedText = '';
+                    if (u.lastScanned) {
+                        let sd = new Date(u.lastScanned);
+                        scannedText = ` | נסרק לאחרונה: ${sd.toLocaleDateString('he-IL')} ${sd.toLocaleTimeString('he-IL', {hour:'2-digit',minute:'2-digit'})}`;
+                    }
+                    let badge = urlObj.isGlobal ? '<span style="background:var(--primary-color);color:#fff;padding:2px 6px;border-radius:4px;font-size:11px;margin-right:6px;">כללי</span>' : `<span style="background:var(--surface-border);color:var(--text-secondary);padding:2px 6px;border-radius:4px;font-size:11px;margin-right:6px;">סוכן: ${urlObj.agentName}</span>`;
+                    let delAction = urlObj.isGlobal ? `deleteGlobalUrl(${urlObj.idx})` : `deleteAgentUrlFromGlobal('${urlObj.agentId}', ${urlObj.idx})`;
+                    
+                    // Notice we don't put rescan button for agent urls right here to avoid complexity, or we can?
+                    // The prompt didn't ask to rescan agent URLs from the global screen, just view/delete, but let's add it if it's easy.
+                    let rescanAction = urlObj.isGlobal 
+                        ? `<button onclick="rescanGlobalUrl(${urlObj.idx}, '${u.url}')" style="background:transparent;border:1px solid var(--primary-color);color:var(--primary-color);padding:4px 8px;border-radius:6px;cursor:pointer;font-size:12px;" title="סרוק מחדש"><i class="ph ph-arrows-clockwise"></i> סרוק מחדש</button>`
+                        : `<button onclick="rescanAgentUrlFromGlobal('${urlObj.agentId}', ${urlObj.idx}, '${u.url}')" style="background:transparent;border:1px solid var(--primary-color);color:var(--primary-color);padding:4px 8px;border-radius:6px;cursor:pointer;font-size:12px;" title="סרוק מחדש"><i class="ph ph-arrows-clockwise"></i> סרוק מחדש</button>`;
+
+                    urlsListHtml += `<div style="background:var(--surface-color);border:1px solid var(--surface-border);border-radius:8px;padding:12px;font-size:14px;display:flex;justify-content:space-between;align-items:center;">
+                        <div>${badge}<i class="ph ph-globe" style="color:var(--primary-color);margin-left:6px;"></i> <a href="${u.url}" target="_blank" style="color:var(--text-primary);text-decoration:none;"><strong>${u.url}</strong></a> <span style="color:var(--text-secondary);font-size:12px;">(${Math.round((u.content||'').length / 1024)}KB טקסט${scannedText})</span></div>
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            ${rescanAction}
+                            <button onclick="openConfirmModal('מחיקת קישור', 'האם אתה בטוח שברצונך למחוק קישור זה ממאגר הידע?', () => ${delAction})" style="background:none;border:none;color:var(--danger, #ef4444);cursor:pointer;font-size:18px;" title="מחק"><i class="ph ph-trash"></i></button>
+                        </div>
+                    </div>`;
+                });
+                urlsListHtml += '</div>';
+            } else {
+                urlsListHtml = '<p style="font-size:14px;color:var(--text-secondary);margin-bottom:16px;">לא נסרקו אתרים למאגר.</p>';
+            }
+
+            const ragUrlsSection = `<div style="background:var(--surface-color-light);border:1px solid var(--surface-border);border-radius:12px;padding:24px;margin-bottom:24px;">
+              <h3 style="color:var(--text-primary);margin-bottom:8px;">🌐 אתרי אינטרנט ועמודי נחיתה</h3>
+              <p style="color:var(--text-secondary);font-size:14px;margin-bottom:16px;">הזן כתובת אתר (URL) כדי שהמערכת תסרוק את התוכן שלו ותלמד ממנו.</p>
+              ${urlsListHtml}
+              <div style="border-top:1px dashed var(--surface-border);padding-top:16px;">
+                  <h4 style="margin-bottom:12px;color:var(--text-primary);">סרוק אתר חדש</h4>
+                  <input type="url" id="global-url-input" placeholder="https://www.example.com" style="width:100%;padding:12px;border:1px solid var(--surface-border);border-radius:8px;background:var(--surface-color);color:var(--text-primary);margin-bottom:12px;font-family:'Heebo',sans-serif;direction:ltr;text-align:left;">
+                  <div id="global-url-status" style="font-size:13px;color:var(--primary-color);margin-bottom:10px;display:none;">סורק אתר... זה עשוי לקחת כמה שניות.</div>
+                  <button onclick="scanGlobalUrl()" style="background:var(--surface-color);border:1px solid var(--primary-color);color:var(--primary-color);padding:10px 20px;border-radius:8px;font-weight:600;cursor:pointer;"><i class="ph ph-globe-hemisphere-east"></i> סרוק ושמור</button>
+              </div>
+            </div>`;
+
+            container.innerHTML = ragQASection + ragDocsSection + ragUrlsSection;
+        }
+
+        function deleteGlobalUrl(index) {
+            window._globalRagData.urls.splice(index, 1);
+            saveGlobalKnowledgeToFirestore();
+        }
+
+        async function scanGlobalUrl() {
+            const input = document.getElementById('global-url-input');
+            let url = input.value.trim();
+            const statusEl = document.getElementById('global-url-status');
+            if(!url) { showToast("יש להזין כתובת אינטרנט (URL).", 'error'); return; }
+            if(!url.startsWith('http')) url = 'https://' + url;
+
+            statusEl.style.display = 'block';
+            statusEl.textContent = 'מתחבר לאתר וסורק עמודים פנימיים... (זה עשוי לקחת קצת זמן)';
+
+            try {
+                var scrapeWebsite = firebase.functions().httpsCallable('scrapeWebsite');
+                var result = await scrapeWebsite({ url: url });
+                var data = result.data;
+                
+                if (!window._globalRagData.urls) window._globalRagData.urls = [];
+                window._globalRagData.urls.push({ 
+                    url: data.url, 
+                    content: data.content,
+                    pagesScraped: data.pagesScraped,
+                    lastScanned: new Date().toISOString()
+                });
+                
+                statusEl.textContent = 'שומר נתונים בענן...';
+                await saveGlobalKnowledgeToFirestore();
+                statusEl.style.display = 'none';
+                input.value = '';
+                showToast(`האתר נסרק בהצלחה (${data.pagesScraped} עמודים)`, 'success');
+            } catch(e) {
+                console.error(e);
+                showToast('שגיאה בסריקת האתר: ' + (typeof e !== 'undefined' ? e.message : 'לא ידוע'), 'error');
+                statusEl.style.display = 'none';
+            }
+        }
+
+        async function rescanGlobalUrl(index, url) {
+            showToast('סורק מחדש, אנא המתן...', 'loading', 60000);
+            try {
+                var scrapeWebsite = firebase.functions().httpsCallable('scrapeWebsite');
+                var result = await scrapeWebsite({ url: url });
+                var data = result.data;
+                
+                if (window._globalRagData && window._globalRagData.urls && window._globalRagData.urls[index]) {
+                    window._globalRagData.urls[index].content = data.content;
+                    window._globalRagData.urls[index].pagesScraped = data.pagesScraped;
+                    window._globalRagData.urls[index].lastScanned = new Date().toISOString();
+                    
+                    await saveGlobalKnowledgeToFirestore();
+                    showToast('האתר נסרק מחדש ועודכן בהצלחה!', 'success');
+                }
+            } catch(e) {
+                console.error(e);
+                showToast('שגיאה בסריקת האתר מחדש: ' + (typeof e !== 'undefined' ? e.message : 'לא ידוע'), 'error');
+            }
+        }
+
+        function addGlobalQA() {
+            const q = document.getElementById('global-qa-q').value.trim();
+            const a = document.getElementById('global-qa-a').value.trim();
+            if(!q || !a) {
+                showToast("יש להזין שאלה ותשובה.", 'error');
+                return;
+            }
+            window._globalRagData.qa.push({ q, a });
+            saveGlobalKnowledgeToFirestore();
+        }
+
+        function deleteGlobalQA(index) {
+            window._globalRagData.qa.splice(index, 1);
+            saveGlobalKnowledgeToFirestore();
+        }
+
+        async function uploadGlobalDoc() {
+            const fileInput = document.getElementById('global-doc-file');
+            const statusEl = document.getElementById('global-doc-status');
+            if(!fileInput.files.length) {
+                showToast("נא לבחור קובץ.", 'error');
+                return;
+            }
+            const file = fileInput.files[0];
+            const ext = file.name.split('.').pop().toLowerCase();
+            statusEl.style.display = 'block';
+            statusEl.textContent = 'קורא קובץ...';
+
+            try {
+                let extractedText = '';
+                if (ext === 'txt') { extractedText = await file.text(); }
+                else if (ext === 'pdf') { extractedText = await parsePDF(file); }
+                else if (ext === 'docx') { extractedText = await parseDOCX(file); }
+                else {
+                    showToast('סוג קובץ לא נתמך. נא להעלות txt, pdf, docx.', 'error');
+                    statusEl.style.display = 'none';
+                    return;
+                }
+                if (!extractedText || extractedText.trim() === '') {
+                    showToast('לא זוהה טקסט בקובץ.', 'error');
+                    statusEl.style.display = 'none';
+                    return;
+                }
+                window._globalRagData.docs.push({ title: file.name, content: extractedText.trim() });
+                statusEl.textContent = 'שומר נתונים בענן...';
+                await saveGlobalKnowledgeToFirestore();
+                statusEl.style.display = 'none';
+            } catch(e) {
+                console.error(e);
+                showToast('שגיאה: ' + (typeof e !== 'undefined' ? e.message : 'לא ידוע'), 'error');
+                statusEl.style.display = 'none';
+            }
+        }
+
+        function deleteGlobalDoc(index) {
+            window._globalRagData.docs.splice(index, 1);
+            saveGlobalKnowledgeToFirestore();
+        }
+
+        // Initialize Global Knowledge when tab opens
+        function initKnowledgeTab() {
+            loadGlobalKnowledge();
+        }
+
+        // --- Dashboard Logic ---
+        async function loadDashboardData() {
+            const cId = sessionStorage.getItem('client_auth');
+            if (!cId) return;
+            try {
+                // Fetch Total Chats
+                const sessionsRef = window._db.collection('agentSessions').where('clientKey', '==', cId);
+                const snapshot = await sessionsRef.get();
+                if (snapshot.size === 0) {
+                    document.getElementById('dashTotalChats').innerHTML = '<span style="font-size:20px;">אין נתוני שימוש במערכת</span>';
+                } else {
+                    document.getElementById('dashTotalChats').textContent = snapshot.size;
+                }
+
+                // Fetch company document for agents list
+                const companyDoc = await window._db.collection('companies').doc(cId).get();
+                let activeAgents = ['customer-service', 'marketing']; // Default fallback
+                if (companyDoc.exists && companyDoc.data().agents) {
+                    const agentsField = companyDoc.data().agents;
+                    if (Array.isArray(agentsField)) {
+                        activeAgents = agentsField;
+                    } else if (typeof agentsField === 'string') {
+                        activeAgents = agentsField.split(',').map(s => s.trim()).filter(s => s);
+                    }
+                }
+                renderAgentsList(activeAgents);
+
+                // Fetch Recent 5
+                const recentQuery = window._db.collection('agentSessions')
+                    .where('clientKey', '==', cId);
+                const recentSnap = await recentQuery.get();
+                const tbody = document.getElementById('dashRecentChatsBody');
+                if (recentSnap.empty) {
+                    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-secondary);padding:20px;">אין נתוני היסטוריית שיחות במערכת</td></tr>';
+                    return;
+                }
+                
+                let docs = [];
+                recentSnap.forEach(doc => docs.push(doc.data()));
+                docs.sort((a, b) => {
+                    let tA = a.lastUpdate && a.lastUpdate.toDate ? a.lastUpdate.toDate().getTime() : (a.sessionStart && a.sessionStart.toDate ? a.sessionStart.toDate().getTime() : 0);
+                    let tB = b.lastUpdate && b.lastUpdate.toDate ? b.lastUpdate.toDate().getTime() : (b.sessionStart && b.sessionStart.toDate ? b.sessionStart.toDate().getTime() : 0);
+                    return tB - tA;
+                });
+                
+                let recentDocs = docs.slice(0, 5);
+                let html = '';
+                recentDocs.forEach(data => {
+                    let dateStr = 'לא ידוע';
+                    if (data.sessionStart && data.sessionStart.toDate) {
+                        const d = data.sessionStart.toDate();
+                        dateStr = `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth()+1).toString().padStart(2, '0')}/${d.getFullYear()} ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+                    }
+                    // Determine result based on fields
+                    let result = 'שיחה רגילה';
+                    if (data.leadCaptured) result = '<span style="color:var(--primary-color);">נאסף ליד חדש</span>';
+                    if (data.meetingScheduled) result = '<span style="color:var(--success);">תואמה פגישה ביומן</span>';
+
+                    const agentDefinitions = {
+                        'customer-service': 'שירות לקוחות', 'tech-support': 'תמיכה טכנית', 'marketing': 'שיווק ומכירות',
+                        'finance': 'כספים', 'operations': 'תפעול', 'onboarding': 'מלווה לקוחות', 'hr': 'HR וגיוס',
+                        'pm': 'מנהל פרויקטים', 'content': 'תוכן ומותג', 'analytics': 'אנליטיקס', 'social': 'רשתות חברתיות'
+                    };
+                    let agentName = agentDefinitions[data.agentId] || data.agentId || 'סוכן';
+                    let channel = data.channel || 'אתר אינטרנט';
+
+                    html += `<tr>
+                        <td>${dateStr}</td>
+                        <td>${agentName}</td>
+                        <td>${channel}</td>
+                        <td>${result}</td>
+                    </tr>`;
+                });
+                tbody.innerHTML = html;
+            } catch(e) {
+                console.error("Dashboard load error", e);
+                document.getElementById('dashTotalChats').textContent = 'שגיאה';
+                document.getElementById('dashRecentChatsBody').innerHTML = '<tr><td colspan="4" style="text-align:center;color:red;padding:20px;">שגיאה בטעינת נתונים: ' + e.message + '</td></tr>';
+            }
+        }
+
+        // Override original tab initialization to trigger loads
+        const originalSwitchTab = switchTab;
+        window.switchTab = function(tabId, el) {
+            originalSwitchTab(tabId, el);
+            if(tabId === 'knowledge') loadGlobalKnowledge();
+            if(tabId === 'dashboard') loadDashboardData();
+            if(tabId === 'chat-history') loadClientChatHistory();
+            if(tabId === 'integration') {
+                var cid = sessionStorage.getItem('client_auth') || localStorage.getItem('client_auth') || 'alpha-company-1234';
+                document.getElementById('integration-client-id').textContent = cid;
+            }
+        };
+
+        // --- Chat History Logic ---
+        let _clientHistorySessions = [];
+        let _clientCurrentHistoryId = null;
+
+        async function loadClientChatHistory() {
+            const cId = sessionStorage.getItem('client_auth');
+            if (!cId) return;
+            const listEl = document.getElementById('hist-list');
+            listEl.innerHTML = '<div style="padding:24px;color:var(--text-secondary);font-size:13px;text-align:center;">⏳ טוען היסטוריה...</div>';
+            
+            try {
+                const snap = await window._db.collection('agentSessions')
+                    .where('clientKey', '==', cId)
+                    .where('status', '==', 'closed')
+                    .get();
+                
+                _clientHistorySessions = [];
+                var uniqueMap = {};
+                snap.forEach(doc => {
+                    let data = Object.assign({ _id: doc.id }, doc.data());
+                    var timeKey = '';
+                    if (data.sessionStart && data.sessionStart.toDate) {
+                        var dObj = data.sessionStart.toDate();
+                        timeKey = dObj.getFullYear() + '-' + dObj.getMonth() + '-' + dObj.getDate() + '-' + dObj.getHours();
+                    }
+                    var dupeKey = (data.customerPhone || data.customerName || 'anon') + '_' + data.agentId + '_' + timeKey;
+                    
+                    if (!uniqueMap[dupeKey]) {
+                        uniqueMap[dupeKey] = data;
+                    } else {
+                        var existingT = uniqueMap[dupeKey].lastUpdate && uniqueMap[dupeKey].lastUpdate.toDate ? uniqueMap[dupeKey].lastUpdate.toDate().getTime() : 0;
+                        var newT = data.lastUpdate && data.lastUpdate.toDate ? data.lastUpdate.toDate().getTime() : 0;
+                        if (newT > existingT) {
+                            uniqueMap[dupeKey] = data;
+                        }
+                    }
+                });
+                
+                _clientHistorySessions = Object.values(uniqueMap);
+                
+                _clientHistorySessions.sort((a,b) => {
+                    let tA = a.sessionStart && a.sessionStart.toDate ? a.sessionStart.toDate().getTime() : 0;
+                    let tB = b.sessionStart && b.sessionStart.toDate ? b.sessionStart.toDate().getTime() : 0;
+                    return tB - tA;
+                });
+                
+                filterClientHistory();
+            } catch(e) {
+                console.error("History load error", e);
+                listEl.innerHTML = '<div style="padding:24px;color:red;font-size:13px;text-align:center;">שגיאה בטעינת היסטוריה: ' + e.message + '</div>';
+            }
+        }
+
+        function filterClientHistory() {
+            const textQ = (document.getElementById('hist-search-text').value || '').toLowerCase();
+            const agentQ = document.getElementById('hist-search-agent').value;
+            const dateQ = document.getElementById('hist-search-date').value;
+            
+            const filtered = _clientHistorySessions.filter(s => {
+                if (agentQ && s.agentId !== agentQ) return false;
+                
+                if (dateQ && s.sessionStart && s.sessionStart.toDate) {
+                    const d = s.sessionStart.toDate();
+                    const dStr = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+                    if (dStr !== dateQ) return false;
+                }
+                
+                if (textQ) {
+                    const name = (s.customerName || '').toLowerCase();
+                    const phone = (s.customerPhone || '').toLowerCase();
+                    const msgs = (s.lastUserMsg || '').toLowerCase();
+                    if (!name.includes(textQ) && !phone.includes(textQ) && !msgs.includes(textQ)) {
+                        return false;
+                    }
+                }
+                return true;
+            });
+            
+            renderClientHistoryList(filtered);
+        }
+
+        function renderClientHistoryList(sessions) {
+            const listEl = document.getElementById('hist-list');
+            if (sessions.length === 0) {
+                listEl.innerHTML = '<div style="padding:24px;color:var(--text-secondary);font-size:13px;text-align:center;"><i class="ph ph-chat-teardrop-slash" style="font-size:32px;opacity:0.3;display:block;margin-bottom:8px;"></i>אין שיחות בהיסטוריה התואמות לחיפוש</div>';
+                return;
+            }
+            
+            listEl.innerHTML = sessions.map(s => {
+                const ts = s.sessionStart && s.sessionStart.toDate 
+                    ? s.sessionStart.toDate().toLocaleString('he-IL', {dateStyle:'short', timeStyle:'short'})
+                    : 'לא ידוע';
+                
+                const selected = s._id === _clientCurrentHistoryId ? ' background:var(--surface-color-light); border-right:3px solid var(--primary-color);' : ' border-right:3px solid transparent;';
+                
+                const aName = AGENT_LABELS[s.agentId] || s.agentId || 'סוכן';
+                
+                return '<div style="padding:16px;border-bottom:1px solid var(--surface-border);cursor:pointer;transition:background 0.2s;' + selected + '" onclick="selectClientHistorySession(\'' + s._id + '\')">'
+                    + '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">'
+                    + '<div style="display:flex;flex-direction:column;gap:2px;">'
+                    + '<span style="font-weight:700;font-size:13px;color:var(--text-primary);">' + (s.customerName||'לקוח') + '</span>'
+                    + (s.customerPhone ? '<span style="font-size:12px;color:var(--text-secondary);">' + s.customerPhone + '</span>' : '')
+                    + '<span style="font-size:12px;color:var(--primary-color);">' + aName + '</span>'
+                    + '</div>'
+                    + '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">'
+                    + '<span style="font-size:11px;color:var(--text-secondary);">' + ts + '</span>'
+                    + '</div>'
+                    + '</div>'
+                    + '<div style="font-size:12px;color:var(--text-secondary);margin-top:6px;background:var(--surface-color-light);padding:6px;border-radius:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + (s.lastUserMsg || 'אין הודעות אחרונות') + '</div>'
+                    + '</div>';
+            }).join('');
+        }
+
+        async function selectClientHistorySession(id) {
+            _clientCurrentHistoryId = id;
+            filterClientHistory(); // re-render list to show selection
+            
+            const detailEl = document.getElementById('hist-detail');
+            detailEl.innerHTML = '<div style="flex:1;display:flex;align-items:center;justify-content:center;color:var(--text-secondary);font-size:14px;">טוען תוכן שיחה...</div>';
+            
+            try {
+                const session = _clientHistorySessions.find(s => s._id === id);
+                if (!session) return;
+                
+                const msgsSnap = await window._db.collection('agentMessages').doc(id).collection('messages').orderBy('ts', 'asc').get();
+                
+                let html = '<div style="padding:16px;background:var(--surface-color-light);border-radius:12px;margin-bottom:16px;">'
+                    + '<h3 style="margin:0 0 8px 0;font-size:16px;">פרטי שיחה</h3>'
+                    + '<div style="font-size:13px;color:var(--text-secondary);display:grid;grid-template-columns:1fr 1fr;gap:8px;">'
+                    + '<div><strong>סוכן:</strong> ' + (AGENT_LABELS[session.agentId] || session.agentId) + '</div>'
+                    + '<div><strong>לקוח:</strong> ' + (session.customerName || 'לא הוזן') + (session.customerPhone ? ' (' + session.customerPhone + ')' : '') + '</div>'
+                    + '<div><strong>משך:</strong> ' + (session.duration || 0) + ' שניות</div>'
+                    + '<div><strong>הודעות:</strong> ' + (session.messageCount || 0) + '</div>'
+                    + '</div>'
+                    + '<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--surface-border);display:flex;gap:8px;">'
+                    + (session.leadCaptured ? '<span style="background:rgba(245, 158, 11, 0.1);color:#f59e0b;padding:2px 8px;border-radius:4px;font-size:11px;">נאסף ליד</span>' : '')
+                    + (session.meetingScheduled ? '<span style="background:rgba(16, 185, 129, 0.1);color:#10b981;padding:2px 8px;border-radius:4px;font-size:11px;">תואמה פגישה</span>' : '')
+                    + '</div>'
+                    + '</div>'
+                    + '<div style="flex:1;background:var(--surface-color);border:1px solid var(--surface-border);border-radius:12px;padding:16px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;">';
+                
+                if (msgsSnap.empty) {
+                    html += '<div style="text-align:center;color:var(--text-secondary);font-size:13px;margin-top:20px;">אין הודעות מתועדות בשיחה זו</div>';
+                } else {
+                    msgsSnap.forEach(doc => {
+                        const m = doc.data();
+                        const isUser = m.sender === 'user';
+                        const tDate = m.ts && m.ts.toDate ? m.ts.toDate().toLocaleTimeString('he-IL', {hour:'2-digit', minute:'2-digit'}) : '';
+                        
+                        html += '<div style="display:flex;flex-direction:column;align-items:' + (isUser ? 'flex-end' : 'flex-start') + ';">'
+                            + '<div style="max-width:80%;padding:10px 14px;border-radius:12px;font-size:13px;line-height:1.5;'
+                            + (isUser ? 'background:var(--primary-color);color:#fff;border-bottom-right-radius:2px;' : 'background:var(--surface-color-light);color:var(--text-primary);border-bottom-left-radius:2px;border:1px solid var(--surface-border);')
+                            + '">' + (m.text || '').replace(/\n/g, '<br>') + '</div>'
+                            + '<div style="font-size:10px;color:var(--text-secondary);margin-top:4px;">' + (isUser ? 'לקוח' : 'סוכן AI') + ' • ' + tDate + '</div>'
+                            + '</div>';
+                    });
+                }
+                
+                html += '</div>';
+                detailEl.innerHTML = html;
+            } catch (e) {
+                console.error("Load messages error:", e);
+                detailEl.innerHTML = '<div style="color:red;font-size:13px;text-align:center;">שגיאה בטעינת הודעות</div>';
+            }
+        }
+
+
+        window.addEventListener('load', () => {
+            if (document.getElementById('client-login-screen').style.display === 'none') {
+                loadDashboardData();
+                initLiveChats();
+            }
+        });
+        
+        function openTestAgent(agentId) {
+            const cId = sessionStorage.getItem('client_auth');
+            const cName = sessionStorage.getItem('client_name') || 'החברה';
+            window.open(`test_agent.html?v=${Date.now()}&agent=${agentId}&key=${cId}&name=${encodeURIComponent(cName)}`, '_blank');
+        }
+
+        function closeHistoryModal() {
+            document.getElementById('clientHistoryModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+        }
+
+        function renderAgentsList(agentsArray) {
+            const grid = document.getElementById('agents-grid');
+            if (!grid) return;
+            
+            const agentDefinitions = {
+                'customer-service': { title: 'שירות לקוחות', icon: 'ph-chat-circle-dots', color: '#25D366', desc: 'עונה ללקוחות 24/7 בוואטסאפ ובאתר.' },
+                'tech-support': { title: 'תמיכה טכנית', icon: 'ph-wrench', color: '#3b82f6', desc: 'פתרון בעיות טכניות ותמיכה במערכות.' },
+                'marketing': { title: 'שיווק ומכירות', icon: 'ph-megaphone', color: 'var(--primary-color)', desc: 'מנהל קמפיינים ואוסף לידים.' },
+                'finance': { title: 'כספים', icon: 'ph-currency-circle-dollar', color: '#10b981', desc: 'גבייה, חשבוניות וטיפול בפיננסים.' },
+                'operations': { title: 'תפעול', icon: 'ph-gear', color: '#8b5cf6', desc: 'ניהול תפעול, מלאי ויומנים.' },
+                'onboarding': { title: 'מלווה לקוחות', icon: 'ph-rocket-launch', color: '#ec4899', desc: 'קליטת לקוחות חדשים ואונבורדינג.' },
+                'hr': { title: 'HR וגיוס', icon: 'ph-users', color: '#14b8a6', desc: 'סינון קורות חיים וגיוס עובדים.' },
+                'pm': { title: 'מנהל פרויקטים', icon: 'ph-kanban', color: '#f59e0b', desc: 'ניהול פרויקטים ומשימות צוות.' },
+                'content': { title: 'תוכן ומותג', icon: 'ph-pen-nib', color: '#6366f1', desc: 'כתיבת תוכן וניהול נכסים דיגיטליים.' },
+                'analytics': { title: 'אנליטיקס', icon: 'ph-chart-line-up', color: '#06b6d4', desc: 'ניתוח נתונים, דוחות ותובנות.' },
+                'social': { title: 'רשתות חברתיות', icon: 'ph-instagram-logo', color: '#f43f5e', desc: 'ניהול עמודי סושיאל ותגובות.' }
+            };
+
+            if (!agentsArray || agentsArray.length === 0) {
+                grid.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: var(--text-secondary); padding: 40px;">לא הוגדרו סוכנים בחשבון זה.</div>';
+                return;
+            }
+
+            let html = '';
+            agentsArray.forEach(agentId => {
+                const def = agentDefinitions[agentId] || { title: agentId, icon: 'ph-robot', color: 'var(--primary-color)', desc: 'סוכן AI מותאם אישית.' };
+                html += '<div class="card" style="border-top:3px solid ' + def.color + ';">'
+                    + '<div class="card-header">'
+                    + '<h3 style="display:flex;align-items:center;gap:8px;"><i class="ph ' + def.icon + '" style="color:' + def.color + ';"></i> ' + def.title + '</h3>'
+                    + '<span style="background:rgba(16,185,129,0.1);color:#10b981;padding:4px 8px;border-radius:4px;font-size:12px;">פעיל</span>'
+                    + '</div>'
+                    + '<p style="color:var(--text-secondary);font-size:14px;margin-bottom:20px;">' + def.desc + '</p>'
+                    + '<button class="btn" style="width:100%;background:#e5e7eb;color:var(--text-primary);margin-bottom:8px;" onclick="openTestAgent(\'' + agentId + '\')">▶️ בדיקת סוכן באייפרים</button>'
+                    + '<button class="btn" style="width:100%;" onclick="openClientAgentSettings(\'' + agentId + '\')">⚙️ הגדרות והוראות</button>'
+                    + '</div>';
+            });
+            grid.innerHTML = html;
+        }
+
+        async function openHistorySession(sessionId) {
+            // Placeholder logic
+        }
+
+        // Replace original agent settings functionality
+        let currentAgentSettingsId = null;
+
+        async function openClientAgentSettings(id) {
+            const defaultNames = {'customer-service':'שירות לקוחות — מאיה','marketing':'שיווק ומכירות — דנה', 'whatsapp-agent': 'סוכן שירות בוואטסאפ', 'web-agent': 'סוכן מכירות לאתר'};
+            
+            // Show loading
+            document.getElementById('clientAgentContent').innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-secondary);">טוען נתונים...</div>';
+            document.getElementById('clientAgentModal').style.display='block';
+            document.body.style.overflow='hidden';
+            currentAgentSettingsId = id;
+
+            const cId = sessionStorage.getItem('client_auth');
+            if (!cId) {
+                document.getElementById('clientAgentContent').innerHTML = '<div style="color:red;padding:20px;">שגיאה: משתמש לא מחובר</div>';
+                return;
+            }
+
+            try {
+                const docRef = window._db.collection('companies').doc(cId).collection('agentData').doc(id);
+                const docSnap = await docRef.get();
+                let data = docSnap.exists ? docSnap.data() : { qa: [], docs: [], urls: [], behavior: '' };
+                if(!data.qa) data.qa = [];
+                if(!data.docs) data.docs = [];
+                if(!data.urls) data.urls = [];
+                if(!data.behavior) data.behavior = '';
+                if(!data.displayName) data.displayName = defaultNames[id] || id;
+                if(!data.avatarUrl) {
+                    const defaultAvatars = {
+                        'customer-service': 'https://onstaffai.web.app/avatars/maya.png',
+                        'marketing': 'https://onstaffai.web.app/avatars/dan.png',
+                        'whatsapp-agent': 'https://onstaffai.web.app/avatars/maya.png',
+                        'web-agent': 'https://onstaffai.web.app/avatars/maya.png'
+                    };
+                    data.avatarUrl = defaultAvatars[id] || 'https://onstaffai.web.app/avatars/maya.png';
+                }
+                // Keep backward compatibility if docs were previously array of strings
+                data.docs = data.docs.map(d => typeof d === 'string' ? { title: 'מסמך ישן', content: d } : d);
+
+                document.getElementById('clientAgentName').textContent = data.displayName;
+
+                // Store globally for the UI
+                window._currentAgentData = data;
+                renderAgentSettings(id);
+            } catch(e) {
+                document.getElementById('clientAgentContent').innerHTML = '<div style="color:red;padding:20px;">שגיאה בטעינת נתונים: ' + e.message + '</div>';
+            }
+        }
+
+        function closeClientModal() {
+            document.getElementById('clientAgentModal').style.display='none';
+            document.body.style.overflow='';
+        }
+
+        function renderAgentSettings(id) {
+            const data = window._currentAgentData;
+            
+            // Profile section
+            const profileSection = `<div style="background:var(--surface-color-light);border:1px solid var(--surface-border);border-radius:12px;padding:20px;margin-bottom:16px;">
+              <h4 style="color:var(--text-primary);margin-bottom:12px;">👤 פרופיל הסוכן</h4>
+              <div style="display:flex;gap:16px;margin-bottom:12px;align-items:center;">
+                  <div>
+                      <img id="agent-avatar-preview" src="${data.avatarUrl || 'https://onstaffai.web.app/avatars/maya.png'}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;border:2px solid var(--surface-border);">
+                  </div>
+                  <div style="flex:1;display:flex;gap:12px;">
+                      <div style="flex:1;">
+                          <label style="font-size:12px;color:var(--text-secondary);display:block;margin-bottom:4px;">שם תצוגה</label>
+                          <input id="agent-display-name" value="${data.displayName || ''}" style="width:100%;padding:10px;border:1px solid var(--surface-border);border-radius:8px;background:var(--surface-color);color:var(--text-primary);font-family:'Heebo',sans-serif;">
+                      </div>
+                      <div style="flex:1;">
+                          <label style="font-size:12px;color:var(--text-secondary);display:block;margin-bottom:4px;">קישור לתמונת אווטר (URL)</label>
+                          <input id="agent-avatar-url" value="${data.avatarUrl || ''}" placeholder="https://..." oninput="document.getElementById('agent-avatar-preview').src=this.value" style="width:100%;padding:10px;border:1px solid var(--surface-border);border-radius:8px;background:var(--surface-color);color:var(--text-primary);font-family:'Heebo',sans-serif;">
+                      </div>
+                  </div>
+              </div>
+              <button onclick="saveAgentProfile()" style="background:var(--primary-color);color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-size:13px;">💾 שמור פרופיל</button>
+            </div>`;
+
+            // Status section
+            const statusSection = `<div style="background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.2);border-radius:12px;padding:16px;margin-bottom:16px;">
+              <div style="display:flex;align-items:center;gap:8px;color:#10b981;font-weight:600;">✅ הסוכן פעיל ומחובר</div>
+              <p style="color:var(--text-secondary);font-size:13px;margin-top:6px;">לשינוי חיבורים (WhatsApp, Ads) — פנה לתמיכה.</p>
+            </div>`;
+
+            // QA List
+            let qaListHtml = '';
+            if (data.qa.length > 0) {
+                qaListHtml = '<h5 style="margin-bottom:8px;color:var(--text-primary);">שאלות ותשובות קיימות:</h5><div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">';
+                data.qa.forEach((item, index) => {
+                    qaListHtml += `<div style="background:var(--surface-color);border:1px solid var(--surface-border);border-radius:8px;padding:10px;font-size:13px;display:flex;justify-content:space-between;align-items:flex-start;">
+                        <div><strong style="color:var(--primary-color);">ש:</strong> ${item.q}<br><strong style="color:var(--text-secondary);">ת:</strong> ${item.a}</div>
+                        <button onclick="openConfirmModal('מחיקת שאלה', 'האם אתה בטוח שברצונך למחוק שאלה זו מהסוכן הספציפי?', () => deleteAgentQA(${index}))" style="background:none;border:none;color:var(--danger, #ef4444);cursor:pointer;font-size:16px;" title="מחק"><i class="ph ph-trash"></i></button>
+                    </div>`;
+                });
+                qaListHtml += '</div>';
+            } else {
+                qaListHtml = '<p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">אין שאלות ותשובות שמורות.</p>';
+            }
+
+            const qaCount = data.qa.length;
+            const qaTitle = qaCount > 0 ? `💬 מאגר שאלות ותשובות (Q&A) (${qaCount})` : `💬 מאגר שאלות ותשובות (Q&A)`;
+            const ragQASection = `<div style="background:var(--surface-color-light);border:1px solid var(--surface-border);border-radius:12px;padding:20px;margin-bottom:16px;">
+              <h4 style="color:var(--text-primary);margin-bottom:12px;">${qaTitle}</h4>
+              ${qaListHtml}
+              <div style="border-top:1px dashed var(--surface-border);padding-top:16px;">
+                  <h5 style="margin-bottom:8px;color:var(--text-primary);">הוסף שאלה ותשובה חדשה</h5>
+                  <input id="new-qa-q" style="width:100%;padding:10px;border:1px solid var(--surface-border);border-radius:8px;background:var(--surface-color);color:var(--text-primary);margin-bottom:10px;font-family:'Heebo',sans-serif;" placeholder="שאלה (לדוגמה: מה שעות הפעילות?)">
+                  <textarea id="new-qa-a" style="width:100%;padding:10px;border:1px solid var(--surface-border);border-radius:8px;background:var(--surface-color);color:var(--text-primary);resize:vertical;min-height:60px;font-family:'Heebo',sans-serif;" placeholder="תשובה (לדוגמה: אנחנו פתוחים ב...)"></textarea>
+                  <button onclick="addAgentQA()" style="margin-top:8px;background:var(--surface-color);border:1px solid var(--primary-color);color:var(--primary-color);padding:8px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-size:13px;">+ הוסף למאגר</button>
+              </div>
+            </div>`;
+
+            // Docs List
+            let docsListHtml = '';
+            if (data.docs.length > 0) {
+                docsListHtml = '<h5 style="margin-bottom:8px;color:var(--text-primary);">מסמכים קיימים:</h5><div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">';
+                data.docs.forEach((doc, index) => {
+                    const title = doc.title || ('מסמך ' + (index + 1));
+                    docsListHtml += `<div style="background:var(--surface-color);border:1px solid var(--surface-border);border-radius:8px;padding:10px;font-size:13px;display:flex;justify-content:space-between;align-items:center;">
+                        <div><i class="ph ph-file-text" style="color:var(--text-secondary);margin-left:4px;"></i> <strong>${title}</strong> <span style="color:var(--text-secondary);font-size:11px;">(${Math.round((doc.content||'').length / 1024)}KB)</span></div>
+                        <button onclick="openConfirmModal('מחיקת מסמך', 'האם אתה בטוח שברצונך למחוק מסמך זה מהסוכן הספציפי?', () => deleteAgentDoc(${index}))" style="background:none;border:none;color:var(--danger, #ef4444);cursor:pointer;font-size:16px;" title="מחק"><i class="ph ph-trash"></i></button>
+                    </div>`;
+                });
+                docsListHtml += '</div>';
+            } else {
+                docsListHtml = '<p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">לא הועלו מסמכים.</p>';
+            }
+
+            const ragDocsSection = `<div style="background:var(--surface-color-light);border:1px solid var(--surface-border);border-radius:12px;padding:20px;margin-bottom:16px;">
+              <h4 style="color:var(--text-primary);margin-bottom:12px;">📄 מסמכי רקע (PDF, Word, TXT)</h4>
+              ${docsListHtml}
+              <div style="border-top:1px dashed var(--surface-border);padding-top:16px;">
+                  <h5 style="margin-bottom:8px;color:var(--text-primary);">העלה מסמך חדש</h5>
+                  <input type="file" id="new-doc-file" accept=".txt,.pdf,.docx" style="margin-bottom:10px;font-size:13px;color:var(--text-secondary);">
+                  <div id="doc-upload-status" style="font-size:12px;color:var(--primary-color);margin-bottom:8px;display:none;">מפענח מסמך... זה עשוי לקחת כמה שניות.</div>
+                  <button onclick="uploadAgentDoc()" style="background:var(--surface-color);border:1px solid var(--primary-color);color:var(--primary-color);padding:8px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-size:13px;"><i class="ph ph-upload-simple"></i> העלה למאגר</button>
+              </div>
+            </div>`;
+
+            // Urls List
+            let urlsListHtml = '';
+            if (data.urls && data.urls.length > 0) {
+                urlsListHtml = '<h5 style="margin-bottom:8px;color:var(--text-primary);">אתרים סרוקים:</h5><div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">';
+                data.urls.forEach((u, index) => {
+                    let scannedText = '';
+                    if (u.lastScanned) {
+                        let sd = new Date(u.lastScanned);
+                        scannedText = ` | נסרק לאחרונה: ${sd.toLocaleDateString('he-IL')} ${sd.toLocaleTimeString('he-IL', {hour:'2-digit',minute:'2-digit'})}`;
+                    }
+                    urlsListHtml += `<div style="background:var(--surface-color);border:1px solid var(--surface-border);border-radius:8px;padding:10px;font-size:13px;display:flex;justify-content:space-between;align-items:center;">
+                        <div><i class="ph ph-globe" style="color:var(--primary-color);margin-left:4px;"></i> <a href="${u.url}" target="_blank" style="color:var(--text-primary);text-decoration:none;"><strong>${u.url}</strong></a> <span style="color:var(--text-secondary);font-size:11px;">(${Math.round((u.content||'').length / 1024)}KB${scannedText})</span></div>
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <button onclick="rescanAgentUrl(${index}, '${u.url}')" style="background:transparent;border:1px solid var(--primary-color);color:var(--primary-color);padding:3px 6px;border-radius:6px;cursor:pointer;font-size:11px;" title="סרוק מחדש"><i class="ph ph-arrows-clockwise"></i> סרוק מחדש</button>
+                            <button onclick="openConfirmModal('מחיקת קישור', 'האם אתה בטוח שברצונך למחוק קישור זה מהסוכן הספציפי?', () => deleteAgentUrl(${index}))" style="background:none;border:none;color:var(--danger, #ef4444);cursor:pointer;font-size:16px;" title="מחק"><i class="ph ph-trash"></i></button>
+                        </div>
+                    </div>`;
+                });
+                urlsListHtml += '</div>';
+            } else {
+                urlsListHtml = '<p style="font-size:13px;color:var(--text-secondary);margin-bottom:16px;">לא נסרקו אתרים.</p>';
+            }
+
+            const ragUrlsSection = `<div style="background:var(--surface-color-light);border:1px solid var(--surface-border);border-radius:12px;padding:20px;margin-bottom:16px;">
+              <h4 style="color:var(--text-primary);margin-bottom:12px;">🌐 סריקת אתר אינטרנט</h4>
+              ${urlsListHtml}
+              <div style="border-top:1px dashed var(--surface-border);padding-top:16px;">
+                  <h5 style="margin-bottom:8px;color:var(--text-primary);">סרוק אתר חדש</h5>
+                  <input type="url" id="new-url-input" placeholder="https://..." style="width:100%;padding:10px;border:1px solid var(--surface-border);border-radius:8px;background:var(--surface-color);color:var(--text-primary);margin-bottom:10px;font-family:'Heebo',sans-serif;direction:ltr;text-align:left;">
+                  <div id="url-upload-status" style="font-size:12px;color:var(--primary-color);margin-bottom:8px;display:none;">סורק אתר... זה עשוי לקחת חצי דקה.</div>
+                  <button onclick="scanAgentUrl()" style="background:var(--surface-color);border:1px solid var(--primary-color);color:var(--primary-color);padding:8px 16px;border-radius:8px;font-weight:600;cursor:pointer;font-size:13px;"><i class="ph ph-globe-hemisphere-east"></i> סרוק אתר</button>
+              </div>
+            </div>`;
+
+            const behaviorSection = `<div style="background:var(--surface-color-light);border:1px solid var(--surface-border);border-radius:12px;padding:20px;margin-bottom:16px;">
+              <h4 style="color:var(--text-primary);margin-bottom:12px;">🧠 הוראות התנהגות (Prompt)</h4>
+              <textarea id="agent-behavior-text" style="width:100%;padding:10px;border:1px solid var(--surface-border);border-radius:8px;background:var(--surface-color);color:var(--text-primary);resize:vertical;min-height:80px;font-family:'Heebo',sans-serif;" placeholder="לדוגמה: תמיד התייחס ללקוחות בשמם הפרטי. אל תציע מוצרים שאין במלאי.">${data.behavior || ''}</textarea>
+              <label style="display:flex;align-items:center;gap:8px;margin-top:12px;cursor:pointer;">
+                <input type="checkbox" id="agent-require-lead" ${data.requireLead ? 'checked' : ''}>
+                <span style="font-size:13px;color:var(--text-primary);">דרוש פרטי קשר (שם וטלפון) בתחילת השיחה</span>
+              </label>
+              <button onclick="saveAgentBehavior()" style="margin-top:12px;background:var(--primary-color);color:#fff;border:none;padding:10px 20px;border-radius:8px;font-weight:600;cursor:pointer;">💾 שמור הוראות</button>
+            </div>`;
+
+            document.getElementById('clientAgentContent').innerHTML = profileSection + behaviorSection + statusSection + ragQASection + ragDocsSection + ragUrlsSection;
+        }
+
+        async function saveAgentDataToFirestore() {
+            const cId = sessionStorage.getItem('client_auth');
+            if (!cId || !currentAgentSettingsId) return;
+            const docRef = window._db.collection('companies').doc(cId).collection('agentData').doc(currentAgentSettingsId);
+            try {
+                await docRef.set(window._currentAgentData, { merge: true });
+                renderAgentSettings(currentAgentSettingsId);
+            } catch(e) {
+                showToast('שגיאה: ' + (typeof e !== 'undefined' ? e.message : 'לא ידוע'), 'error');
+            }
+        }
+
+        function addAgentQA() {
+            const q = document.getElementById('new-qa-q').value.trim();
+            const a = document.getElementById('new-qa-a').value.trim();
+            if (!q || !a) { showToast('אנא הזן שאלה ותשובה', 'error'); return; }
+            window._currentAgentData.qa.push({ q: q, a: a });
+            saveAgentDataToFirestore();
+        }
+
+        function deleteAgentQA(index) {
+            window._currentAgentData.qa.splice(index, 1);
+            saveAgentDataToFirestore();
+        }
+
+        function deleteAgentUrl(index) {
+            window._currentAgentData.urls.splice(index, 1);
+            saveAgentDataToFirestore();
+        }
+
+        async function scanAgentUrl() {
+            const input = document.getElementById('new-url-input');
+            let url = input.value.trim();
+            const statusEl = document.getElementById('url-upload-status');
+            if(!url) { showToast("יש להזין כתובת אינטרנט (URL).", 'error'); return; }
+            if(!url.startsWith('http')) url = 'https://' + url;
+
+            statusEl.style.display = 'block';
+            statusEl.textContent = 'מתחבר לאתר וסורק עמודים פנימיים... (זה עשוי לקחת קצת זמן)';
+
+            try {
+                var scrapeWebsite = firebase.functions().httpsCallable('scrapeWebsite');
+                var result = await scrapeWebsite({ url: url });
+                var data = result.data;
+                
+                if(!window._currentAgentData.urls) window._currentAgentData.urls = [];
+                window._currentAgentData.urls.push({ 
+                    url: data.url, 
+                    content: data.content,
+                    pagesScraped: data.pagesScraped,
+                    lastScanned: new Date().toISOString()
+                });
+                
+                statusEl.textContent = 'שומר נתונים בענן...';
+                await saveAgentDataToFirestore();
+                statusEl.style.display = 'none';
+                input.value = '';
+                showToast(`האתר נסרק בהצלחה (${data.pagesScraped} עמודים)`, 'success');
+            } catch(e) {
+                console.error(e);
+                showToast('שגיאה בסריקת האתר: ' + (typeof e !== 'undefined' ? e.message : 'לא ידוע'), 'error');
+                statusEl.style.display = 'none';
+            }
+        }
+
+        async function rescanAgentUrl(index, url) {
+            showToast('סורק מחדש, אנא המתן...', 'loading', 60000);
+            try {
+                var scrapeWebsite = firebase.functions().httpsCallable('scrapeWebsite');
+                var result = await scrapeWebsite({ url: url });
+                var data = result.data;
+                
+                if (window._currentAgentData && window._currentAgentData.urls && window._currentAgentData.urls[index]) {
+                    window._currentAgentData.urls[index].content = data.content;
+                    window._currentAgentData.urls[index].pagesScraped = data.pagesScraped;
+                    window._currentAgentData.urls[index].lastScanned = new Date().toISOString();
+                    
+                    await saveAgentDataToFirestore();
+                    showToast('האתר נסרק מחדש ועודכן בהצלחה!', 'success');
+                }
+            } catch(e) {
+                console.error(e);
+                showToast('שגיאה בסריקת האתר מחדש: ' + (typeof e !== 'undefined' ? e.message : 'לא ידוע'), 'error');
+            }
+        }
+
+        function deleteAgentDoc(index) {
+            window._currentAgentData.docs.splice(index, 1);
+            saveAgentDataToFirestore();
+        }
+
+        function saveAgentProfile() {
+            window._currentAgentData.displayName = document.getElementById('agent-display-name').value.trim();
+            window._currentAgentData.avatarUrl = document.getElementById('agent-avatar-url').value.trim();
+            saveAgentDataToFirestore().then(() => {
+                document.getElementById('clientAgentName').textContent = window._currentAgentData.displayName;
+                showToast('פרופיל נשמר בהצלחה!', 'success');
+            });
+        }
+
+        function saveAgentBehavior() {
+            const text = document.getElementById('agent-behavior-text').value.trim();
+            const requireLead = document.getElementById('agent-require-lead').checked;
+            window._currentAgentData.behavior = text;
+            window._currentAgentData.requireLead = requireLead;
+            saveAgentDataToFirestore().then(() => showToast('הוראות נשמרו בהצלחה!', 'success'));
+        }
+
+        // --- Document Parsing ---
+        async function uploadAgentDoc() {
+            const fileInput = document.getElementById('new-doc-file');
+            if (!fileInput.files || fileInput.files.length === 0) {
+                showToast('אנא בחר קובץ להעלאה', 'error');
+                return;
+            }
+            const file = fileInput.files[0];
+            const ext = file.name.split('.').pop().toLowerCase();
+            const statusEl = document.getElementById('doc-upload-status');
+            
+            statusEl.style.display = 'block';
+            statusEl.textContent = 'קורא ומפענח מסמך...';
+
+            try {
+                let extractedText = '';
+                if (ext === 'txt') {
+                    extractedText = await file.text();
+                } else if (ext === 'pdf') {
+                    extractedText = await parsePDF(file);
+                } else if (ext === 'docx') {
+                    extractedText = await parseDOCX(file);
+                } else {
+                    showToast('סוג קובץ לא נתמך. נא להעלות txt, pdf, docx.', 'error');
+                    statusEl.style.display = 'none';
+                    return;
+                }
+
+                if (!extractedText || extractedText.trim() === '') {
+                    showToast('לא זוהה טקסט בקובץ.', 'error');
+                    statusEl.style.display = 'none';
+                    return;
+                }
+
+                window._currentAgentData.docs.push({
+                    title: file.name,
+                    content: extractedText.trim()
+                });
+                
+                statusEl.textContent = 'שומר נתונים בענן...';
+                await saveAgentDataToFirestore();
+                statusEl.style.display = 'none';
+            } catch(e) {
+                console.error(e);
+                showToast('שגיאה: ' + (typeof e !== 'undefined' ? e.message : 'לא ידוע'), 'error');
+                statusEl.style.display = 'none';
+            }
+        }
+
+        async function parsePDF(file) {
+            const arrayBuffer = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+            let fullText = '';
+            for (let i = 1; i <= pdf.numPages; i++) {
+                const page = await pdf.getPage(i);
+                const textContent = await page.getTextContent();
+                const pageText = textContent.items.map(item => item.str).join(' ');
+                fullText += pageText + '\\n';
+            }
+            return fullText;
+        }
+
+        async function parseDOCX(file) {
+            const arrayBuffer = await file.arrayBuffer();
+            const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
+            return result.value;
+        }
+    </script>
+    <!-- Custom Confirm Modal -->
+    <div id="customConfirmModal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);">
+        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%, -50%);background:var(--surface-color);border:1px solid var(--surface-border);border-radius:16px;box-shadow:0 10px 40px rgba(0,0,0,0.3);width:90%;max-width:400px;text-align:center;padding:30px;">
+            <div style="font-size: 40px; color: var(--danger, #ef4444); margin-bottom: 15px;"><i class="ph ph-warning-circle"></i></div>
+            <h2 id="confirmModalTitle" style="margin-bottom: 10px;">האם אתה בטוח?</h2>
+            <p id="confirmModalText" style="color: var(--text-secondary); margin-bottom: 24px; font-size: 15px;"></p>
+            <div style="display: flex; gap: 12px; justify-content: center;">
+                <button class="btn btn-outline" onclick="closeConfirmModal()">ביטול</button>
+                <button class="btn" id="confirmModalActionBtn" style="background: var(--danger, #ef4444); color: white; border: none;">כן, מחק</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let pendingConfirmAction = null;
+        function openConfirmModal(title, text, actionCallback) {
+            document.getElementById('confirmModalTitle').textContent = title;
+            document.getElementById('confirmModalText').textContent = text;
+            pendingConfirmAction = actionCallback;
+            document.getElementById('customConfirmModal').style.display = 'block';
+        }
+        function closeConfirmModal() {
+            document.getElementById('customConfirmModal').style.display = 'none';
+            pendingConfirmAction = null;
+        }
+        document.getElementById('confirmModalActionBtn').addEventListener('click', () => {
+            if (pendingConfirmAction) pendingConfirmAction();
+            closeConfirmModal();
+        });
+        
+        function showToast(msg, type, duration) {
+            type = type || 'success';
+            duration = duration || 3500;
+            var icons = { success:'✅', error:'❌', info:'ℹ️', loading:'⏳' };
+            var el = document.createElement('div');
+            el.className = 'toast ' + type;
+            var icon = document.createElement('span');
+            icon.className = 'toast-icon';
+            icon.textContent = icons[type] || 'ℹ️';
+            var txt = document.createElement('span');
+            txt.className = 'toast-msg';
+            txt.textContent = msg;
+            var btn = document.createElement('button');
+            btn.className = 'toast-close';
+            btn.textContent = '×';
+            btn.title = 'סגור';
+            el.appendChild(icon);
+            el.appendChild(txt);
+            el.appendChild(btn);
+            var container = document.getElementById('toast-container');
+            if (!container) return;
+            container.appendChild(el);
+            var t = setTimeout(function(){ removeToast(el); }, duration);
+            btn.onclick = function(){ clearTimeout(t); removeToast(el); };
+            function removeToast(e) {
+                e.style.opacity = '0';
+                e.style.transform = 'translateY(-10px)';
+                setTimeout(function(){ if(e.parentNode) e.parentNode.removeChild(e); }, 350);
+            }
+        }
+    </script>
+    <div id="toast-container"></div>
+</body>
+</html>

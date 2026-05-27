@@ -1,0 +1,9 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Admin panel — allow all reads/writes for now (secure later with Auth)
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}

@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-H73PEQ49ZT"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-H73PEQ49ZT');
+</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OnStaffAI — סוכן AI</title>
+    <meta name="description" content="שיחה עם סוכן ה-AI">
+    <link rel="icon" href="favicon.ico">
+    <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/regular/style.css">
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script>
+        if (!firebase.apps.length) {
+            firebase.initializeApp({
+                apiKey: "AIzaSyD8bNj7KimdgkZ8rKyd4DACwHWGtbFBpTM",
+                authDomain: "onstaffai.firebaseapp.com",
+                projectId: "onstaffai",
+                storageBucket: "onstaffai.firebasestorage.app",
+                messagingSenderId: "928687174326",
+                appId: "1:928687174326:web:859a3cc6719843457dec17"
+            });
+        }
+        const _db = firebase.firestore();
+    </script>
+
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --primary:      #ea580c;
+            --primary-dark: #c2410c;
+            --bg:           #f5f0eb;
+            --surface:      #ffffff;
+            --surface2:     #f0ebe4;
+            --border:       rgba(0,0,0,0.08);
+            --text:         #1c1917;
+            --text-muted:   #78716c;
+            --font:         'Heebo', sans-serif;
+        }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg);
+            color: var(--text);
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* ─── HEADER ─── */
+        #chat-header {
+            background: var(--primary);
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-shrink: 0;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        #agent-avatar {
+            width: 60px; height: 60px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 26px;
+            flex-shrink: 0;
+            overflow: hidden;
+            border: 3px solid rgba(255,255,255,0.4);
+            box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+        }
+        #agent-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+        #agent-info { flex: 1; min-width: 0; }
+        #agent-name-el  { font-weight: 700; font-size: 16px; color: #fff; }
+        #agent-role-el  { font-size: 12px; color: rgba(255,255,255,0.8); margin-top: 2px; }
+        #agent-status   {
+            font-size: 11px; color: rgba(255,255,255,0.75);
+            display: flex; align-items: center; gap: 5px; margin-top: 3px;
+        }
+        #agent-status::before {
+            content: ''; width: 7px; height: 7px;
+            border-radius: 50%; background: #86efac; display: inline-block;
+        }
+
+        #company-logo-header {
+            height: 32px; max-width: 100px;
+            object-fit: contain; display: none;
+        }
+
+        /* ─── MESSAGES ─── */
+        #messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px 16px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            scroll-behavior: smooth;
+        }
+        #messages::-webkit-scrollbar { width: 4px; }
+        #messages::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 4px; }
+
+        .msg-row {
+            display: flex;
+            align-items: flex-end;
+            gap: 8px;
+            max-width: 700px;
+            width: 100%;
+        }
+        .msg-row.user { align-self: flex-end; flex-direction: row-reverse; }
+        .msg-row.bot  { align-self: flex-start; }
+
+        .msg-avatar {
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 15px; flex-shrink: 0;
+            overflow: hidden;
+        }
+        .msg-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+        .msg-col { display: flex; flex-direction: column; }
+        .msg-row.user .msg-col { align-items: flex-end; }
+        .msg-row.bot  .msg-col { align-items: flex-start; }
+
+        .bubble {
+            padding: 11px 16px;
+            border-radius: 18px;
+            font-size: 14px;
+            line-height: 1.65;
+            max-width: min(500px, calc(100vw - 80px));
+            word-break: break-word;
+            white-space: pre-wrap;
+        }
+        .msg-row.user .bubble {
+            background: var(--primary);
+            color: #fff;
+            border-radius: 18px 18px 4px 18px;
+        }
+        .msg-row.bot .bubble {
+            background: #ffffff;
+            color: var(--text);
+            border-radius: 18px 18px 18px 4px;
+            border: 1px solid var(--border);
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        }
+
+        .msg-time { font-size: 10px; color: var(--text-muted); margin-top: 4px; padding: 0 4px; }
+
+        /* Typing indicator */
+        .typing-dots { display: flex; gap: 5px; align-items: center; padding: 2px 0; }
+        .typing-dots span {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: var(--text-muted);
+            animation: tdot 1.3s infinite ease-in-out;
+        }
+        .typing-dots span:nth-child(2) { animation-delay: .2s; }
+        .typing-dots span:nth-child(3) { animation-delay: .4s; }
+        @keyframes tdot {
+            0%,60%,100% { transform: translateY(0); opacity:.5; }
+            30% { transform: translateY(-7px); opacity:1; }
+        }
+
+        /* ─── HUMAN REQUEST BANNER ─── */
+        #human-request-bar {
+            display: none;
+            background: #fff7ed;
+            border-top: 2px solid #f97316;
+            padding: 12px 20px;
+            text-align: center;
+            font-size: 13px;
+            color: #9a3412;
+            font-weight: 600;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+        }
+        #human-active-bar {
+            display: none;
+            background: #ecfdf5;
+            border-top: 2px solid #10b981;
+            padding: 10px 20px;
+            text-align: center;
+            font-size: 13px;
+            color: #065f46;
+            font-weight: 600;
+        }
+        .msg-row.human .bubble {
+            background: #eff6ff;
+            color: #1e3a8a;
+            border: 1px solid #bfdbfe;
+            border-radius: 18px 18px 18px 4px;
+        }
+        .msg-row.human .msg-avatar { background: #dbeafe; color: #1d4ed8; font-size: 16px; }
+
+        /* ─── INPUT ─── */
+        #input-area {
+            background: #ffffff;
+            border-top: 1px solid var(--border);
+            padding: 14px 16px 18px;
+            flex-shrink: 0;
+        }
+        #human-btn-row {
+            max-width: 700px;
+            margin: 0 auto 10px;
+            text-align: center;
+        }
+        #request-human-btn {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            font-family: var(--font);
+            transition: all .2s;
+        }
+        #request-human-btn:hover { border-color: #f97316; color: #f97316; }
+        #input-row {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        #msg-input {
+            flex: 1;
+            background: #f5f0eb;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 12px 16px;
+            color: var(--text);
+            font-family: var(--font);
+            font-size: 14px;
+            resize: none;
+            outline: none;
+            line-height: 1.5;
+            max-height: 130px;
+            overflow-y: auto;
+            transition: border-color .2s;
+        }
+        #msg-input:focus { border-color: var(--primary); }
+        #msg-input::placeholder { color: var(--text-muted); }
+
+        #send-btn {
+            width: 46px; height: 46px;
+            border-radius: 50%;
+            background: var(--primary);
+            border: none; color: #fff;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+            transition: background .2s, transform .1s, box-shadow .2s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        #send-btn:hover  { background: var(--primary-dark); box-shadow: 0 6px 16px rgba(0,0,0,0.4); }
+        #send-btn:active { transform: scale(.92); }
+        #send-btn:disabled { opacity: .4; cursor: not-allowed; box-shadow: none; }
+
+        #hint { text-align: center; font-size: 11px; color: var(--text-muted); margin-top: 8px; }
+
+        /* ─── LOADING / ERROR ─── */
+        #loading-screen {
+            position: fixed; inset: 0; background: #f5f0eb;
+            display: flex; align-items: center; justify-content: center;
+            flex-direction: column; gap: 16px; z-index: 50;
+        }
+        .spinner {
+            width: 40px; height: 40px;
+            border: 3px solid rgba(0,0,0,0.1);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin .8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        #error-screen {
+            display: none; position: fixed; inset: 0; background: #f5f0eb;
+            align-items: center; justify-content: center;
+            flex-direction: column; gap: 16px; text-align: center; padding: 24px;
+        }
+        #error-screen.show { display: flex; }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            #messages { padding: 14px 10px 8px; }
+            .bubble { font-size: 13px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Loading -->
+<div id="loading-screen">
+    <div class="spinner" id="loader-spinner"></div>
+    <div style="font-size:14px;color:var(--text-muted);">טוען סוכן...</div>
+</div>
+
+<!-- Error -->
+<div id="error-screen">
+    <div style="font-size:48px;">🤖</div>
+    <div style="font-size:20px;font-weight:700;">לא ניתן להתחבר</div>
+    <div id="error-msg" style="font-size:14px;color:var(--text-muted);max-width:320px;line-height:1.6;"></div>
+</div>
+
+<!-- Header -->
+<div id="chat-header" style="display:none;">
+    <div id="agent-avatar">🤖</div>
+    <div id="agent-info">
+        <div id="agent-name-el">OnStaffAI</div>
+        <div id="agent-role-el"></div>
+        <div id="agent-status">מחובר ופעיל</div>
+    </div>
+    <img id="company-logo-header" alt="לוגו חברה">
+    <div style="position:absolute;left:12px;top:50%;transform:translateY(-50%);display:flex;gap:6px;">
+        <button onclick="minimizeChatWidget()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:background .15s;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'" title="מזער צ'אט"><i class="ph ph-minus"></i></button>
+        <button onclick="promptCloseChat()" style="background:rgba(255,255,255,0.2);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:background .15s;" onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'" title="סגור שיחה"><i class="ph ph-x"></i></button>
+    </div>
+</div>
+
+<!-- Close Confirm Dialog -->
+<div id="close-confirm-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;padding:20px;">
+    <div style="background:#fff;border-radius:16px;padding:24px;width:100%;max-width:320px;text-align:center;box-shadow:0 10px 25px rgba(0,0,0,0.1);">
+        <h3 style="margin-bottom:12px;font-size:18px;color:#1f2937;">לסיים את השיחה?</h3>
+        <p style="color:#4b5563;font-size:14px;line-height:1.5;margin-bottom:20px;">
+            סגירת הצ'אט תסיים את השיחה הנוכחית ותעביר אותה לארכיון.<br>
+            האם ברצונך להמשיך?
+        </p>
+        <div style="display:flex;gap:12px;justify-content:center;">
+            <button onclick="document.getElementById('close-confirm-overlay').style.display='none'" style="padding:10px 20px;border-radius:20px;border:1px solid #d1d5db;background:#fff;color:#4b5563;font-weight:600;cursor:pointer;">ביטול</button>
+            <button onclick="confirmCloseChat()" style="padding:10px 20px;border-radius:20px;border:none;background:#ef4444;color:#fff;font-weight:600;cursor:pointer;">כן, סגור שיחה</button>
+        </div>
+    </div>
+</div>
+
+<!-- Messages -->
+<div id="messages" style="display:none;"></div>
+
+<!-- Human request waiting bar -->
+<div id="human-request-bar">⏳ בקשתך הועברה — נציג אנושי יצטרף לשיחה בקרוב. אנא המתן...</div>
+<!-- Human active bar -->
+<div id="human-active-bar">✅ נציג אנושי הצטרף לשיחה</div>
+
+<!-- Input -->
+<div id="input-area" style="display:none;">
+    <div id="human-btn-row" style="display:none;">
+        <button id="request-human-btn" onclick="requestHumanAgent()">🙋 העבר לנציג אנושי</button>
+    </div>
+    <div id="input-row">
+        <textarea id="msg-input" rows="1" placeholder="כתוב הודעה..."></textarea>
+        <button id="send-btn" title="שלח">
+            <i class="ph ph-arrow-up" style="font-weight: bold; font-size: 24px;"></i>
+        </button>
+    </div>
+    <div id="hint">Enter לשליחה &nbsp;·&nbsp; Shift+Enter לשורה חדשה</div>
+<script>
+// ─── URL PARAMS ───
+var params        = new URLSearchParams(location.search);
+var agentId       = params.get('agent') || 'customer-service';
+var clientKey     = params.get('key')   || 'onstaffai';
+var urlClientName = params.get('clientName') || '';
+var urlClientPhone = params.get('clientPhone') || '';
+var urlCompanyName = params.get('companyName') || '';
+
+// ─── AGENT DEFINITIONS ───
+var BASE_URL = 'https://onstaffai.web.app/avatars/';
+var AGENT_DEFS = {
+    'customer-service': { name: 'מאיה',  title: 'נציגת שירות לקוחות', avatar: BASE_URL+'maya.png',   color: '#10b981' },
+    'tech-support':     { name: 'אלון',  title: 'תמיכה טכנית',         avatar: BASE_URL+'alon.png',   color: '#6366f1' },
+    'operations':       { name: 'נועה',  title: 'תיאום פגישות',        avatar: BASE_URL+'noa.png',    color: '#f59e0b' },
+    'marketing':        { name: 'דן',    title: 'שיווק ומכירות',       avatar: BASE_URL+'dan.png',    color: '#ec4899' },
+    'finance':          { name: 'מיכל',  title: 'ייעוץ כספי',          avatar: BASE_URL+'michal.png', color: '#14b8a6' },
+    'onboarding':       { name: 'ליעד',   title: 'מלווה לקוחות (Onboarding)', avatar: BASE_URL+'maya.png', color: '#f97316' }
+};
+
+// ─── STATE ───
+var agentDef       = AGENT_DEFS[agentId] || { name: agentId, title: 'עוזר AI', avatar: '', color: '#ea580c' };
+var companyName    = urlCompanyName || 'OnStaffAI';
+var companyLogo    = '';
+var companyWebsite = '';
+var ragData        = null;
+var globalRagData  = null;
+var claudeKey      = '';
+var chatHistory    = [];
+var agentAvatarHtml = '';  // set in init()
+
+// ─── ANALYTICS SESSION ───
+var _session = { id: null, start: Date.now(), msgCount: 0, resolved: false, awaitingHuman: false, humanActive: false };
+var _RESOLVE_KEYWORDS = ['תודה', 'הועבר', 'בהצלחה', 'נסגר', 'bye', 'להתראות', 'Good luck', 'נפתר', 'בוצע'];
+var _humanListener = null;
+
+// Minimize chat widget (hides iframe, keeps session active)
+function minimizeChatWidget() {
+    if (window.parent !== window) {
+        window.parent.postMessage({ type: 'onstaffai-close' }, '*');
+    }
+}
+
+// Prompt close
+function promptCloseChat() {
+    document.getElementById('close-confirm-overlay').style.display = 'flex';
+}
+
+// Actually close and reset session
+async function confirmCloseChat() {
+    document.getElementById('close-confirm-overlay').style.display = 'none';
+    
+    // End current session if exists
+    await _sessionEnd(true);
+
+    if (window.parent !== window) {
+        window.parent.postMessage({ type: 'onstaffai-close' }, '*');
+    }
+
+    // Reset UI and internal state for next open
+    document.getElementById('messages').innerHTML = '';
+    chatHistory = [];
+    _session = { id: null, start: Date.now(), msgCount: 0, resolved: false, awaitingHuman: false, humanActive: false };
+    document.getElementById('human-request-bar').style.display = 'none';
+    document.getElementById('human-active-bar').style.display = 'none';
+    document.getElementById('human-btn-row').style.display = 'none';
+    
+    // Start a fresh session quietly in background
+    await _sessionStart();
+    _playWelcomeMessage();
+}
+
+async function _sessionStart() {
+    try {
+        var ref = await _db.collection('agentSessions').add({
+            agentId:       agentId,
+            clientKey:     clientKey || 'website',
+            companyId:     clientKey || 'onstaffai',
+            source:        clientKey ? 'portal' : (document.referrer.includes('onboarding') ? 'onboarding' : 'website'),
+            sessionStart:  firebase.firestore.FieldValue.serverTimestamp(),
+            lastUpdate:    firebase.firestore.FieldValue.serverTimestamp(),
+            sessionEnd:    null,
+            duration:      0,
+            messageCount:  0,
+            resolved:      false,
+            awaitingHuman: false,
+            humanTakeoverBy: null,
+            status:        'active',
+            lang:          'he',
+            lastUserMsg:   ''
+        });
+        _session.id = ref.id;
+        console.log('[CHAT] Session created:', _session.id);
+
+        await _db.collection('agentMessages').doc(_session.id).set({
+            sessionId: _session.id,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        console.log('[CHAT] Messages parent doc created');
+
+        // Listen for status changes (human takeover, close)
+        _humanListener = _db.collection('agentSessions').doc(_session.id)
+            .onSnapshot(function(snap) {
+                if (!snap.exists) return;
+                var d = snap.data();
+                // Human took over
+                if (d.status === 'human_active' && !_session.humanActive) {
+                    console.log('[CHAT] Human takeover detected!');
+                    _session.humanActive = true;
+                    _session.awaitingHuman = true;
+                    document.getElementById('human-request-bar').style.display = 'none';
+                    document.getElementById('human-active-bar').style.display = 'block';
+                    document.getElementById('request-human-btn').style.display = 'none';
+                    document.getElementById('agent-status').textContent = 'נציג אנושי פעיל';
+                    addBotMsg('נציג אנושי הצטרף לשיחה. מעתה תקבלו מענה ישירות מנציג.');
+                }
+                // Session closed by admin
+                if (d.status === 'closed' && !_session._closedNotified) {
+                    _session._closedNotified = true;
+                    document.getElementById('human-active-bar').style.display = 'none';
+                    document.getElementById('human-request-bar').style.display = 'none';
+                    addBotMsg('השיחה הסתיימה. תודה שפנית אלינו! 🙏');
+                    document.getElementById('msg-input').disabled = true;
+                    document.getElementById('send-btn').disabled = true;
+                }
+            });
+
+        var _seenMsgIds = {};
+        console.log('[CHAT] Setting up messages listener on:', _session.id);
+        _db.collection('agentMessages').doc(_session.id)
+            .collection('messages')
+            .onSnapshot(function(msgs) {
+                console.log('[CHAT] Messages snapshot, changes:', msgs.docChanges().length);
+                msgs.docChanges().forEach(function(change) {
+                    if (change.type === 'added') {
+                        var msgId = change.doc.id;
+                        if (_seenMsgIds[msgId]) return;
+                        _seenMsgIds[msgId] = true;
+                        var data = change.doc.data();
+                        if (data.sender === 'human') {
+                            console.log('[CHAT] Received human message:', data.text);
+                            addHumanMsg(data.text);
+                        }
+                    }
+                });
+            }, function(err) {
+                console.warn('Messages listener error:', err);
+            });
+    } catch(e) { console.warn('Session start failed:', e); }
+}
+
+async function _saveMessage(text, sender) {
+    if (!_session.id) return;
+    try {
+        await _db.collection('agentMessages').doc(_session.id)
+            .collection('messages').add({
+                text: text, sender: sender,
+                ts: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        // Keep lastUserMsg updated for operator context and mark as unread
+        if (sender === 'user') {
+            _db.collection('agentSessions').doc(_session.id).update({ 
+                lastUserMsg: text,
+                unread: true,
+                followUpSent: false
+            }).catch(function(){});
+        }
+    } catch(e) {}
+}
+
+async function requestHumanAgent() {
+    if (_session.awaitingHuman || _session.humanActive) return;
+    _session.awaitingHuman = true;
+    document.getElementById('request-human-btn').disabled = true;
+    document.getElementById('request-human-btn').textContent = '⏳ ממתין לנציג...';
+    document.getElementById('human-request-bar').style.display = 'flex';
+    // Add system message in chat
+    addBotMsg('קיבלתי את בקשתך! מעביר אותך לנציג אנושי — אנא המתן מספר רגעים.');
+    if (_session.id) {
+        try {
+            await _db.collection('agentSessions').doc(_session.id).update({
+                awaitingHuman: true,
+                status: 'awaiting_human',
+                awaitingAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+        } catch(e) {}
+    }
+}
+
+function addHumanMsg(text) {
+    var msgs = document.getElementById('messages');
+    var row = document.createElement('div');
+    row.className = 'msg-row human';
+    row.innerHTML = '<div class="msg-avatar">👤</div>'
+        + '<div class="msg-col">'
+        + '<div style="font-size:10px;color:#1d4ed8;margin-bottom:3px;padding:0 4px;">נציג אנושי</div>'
+        + '<div class="bubble">' + esc(text) + '</div>'
+        + '<div class="msg-time">' + nowStr() + '</div>'
+        + '</div>';
+    msgs.appendChild(row);
+    msgs.scrollTop = msgs.scrollHeight;
+}
+
+async function _sessionEnd(forceClose) {
+    if (!_session.id || _session._ended) return;
+    if (forceClose) _session._ended = true;
+    if (_humanListener && forceClose) { _humanListener(); _humanListener = null; }
+    try {
+        var update = {
+            sessionEnd:   firebase.firestore.FieldValue.serverTimestamp(),
+            duration:     Math.round((Date.now() - _session.start) / 1000),
+            messageCount: _session.msgCount,
+            resolved:     _session.resolved
+        };
+        // Only set 'closed' on actual page close, not tab switch
+        if (forceClose) {
+            update.status = _session.humanActive ? 'human_closed' : 'closed';
+        }
+        await _db.collection('agentSessions').doc(_session.id).update(update);
+    } catch(e) {}
+}
+
+window.addEventListener('beforeunload', function() { _sessionEnd(true); });
+// On visibility hidden, just update stats but don't close
+document.addEventListener('visibilitychange', function() { if (document.visibilityState === 'hidden') _sessionEnd(false); });
+
+// ─── INIT ───
+async function init() {
+    // 1. Load settings (Claude API key) from Firestore
+    try {
+        var settingsDoc = await _db.collection('settings').doc('apiKeys').get();
+        if (settingsDoc.exists && settingsDoc.data().claudeApiKey) {
+            claudeKey = settingsDoc.data().claudeApiKey;
+        }
+    } catch(e) { console.warn('Settings load failed:', e.message); }
+
+    // 2. Load company data + RAG from Firestore (if clientKey provided)
+    if (clientKey) {
+        try {
+            var companyDoc = await _db.collection('companies').doc(clientKey).get();
+            if (companyDoc.exists) {
+                var cd = companyDoc.data();
+                companyName    = cd.companyName || cd.name || companyName;
+                companyWebsite = cd.website || '';
+
+                // Apply company branding colors
+                if (cd.branding) {
+                    if (cd.branding.primary) {
+                        document.documentElement.style.setProperty('--primary',      cd.branding.primary);
+                        document.documentElement.style.setProperty('--primary-dark', darken(cd.branding.primary, 20));
+                        document.getElementById('chat-header').style.background = cd.branding.primary;
+                        document.getElementById('send-btn').style.background    = cd.branding.primary;
+                        document.getElementById('loader-spinner').style.borderTopColor = cd.branding.primary;
+                    }
+                    if (cd.branding.logo) {
+                        companyLogo = cd.branding.logo;
+                    }
+                }
+            }
+
+            // 3. Load RAG (agent-specific data)
+            var ragDoc = await _db.collection('companies').doc(clientKey)
+                .collection('agentData').doc(agentId).get();
+            if (ragDoc.exists) ragData = ragDoc.data();
+
+            // 3.5. Load Global RAG data
+            var globalRagDoc;
+            if (clientKey === 'onstaffai') {
+                globalRagDoc = await _db.collection('globalKnowledge').doc('data').get();
+            } else {
+                globalRagDoc = await _db.collection('companies').doc(clientKey)
+                    .collection('globalData').doc('rag').get();
+            }
+            if (globalRagDoc.exists) globalRagData = globalRagDoc.data();
+
+        } catch(e) { console.warn('Company load failed:', e.message); }
+    }
+
+    // 4. Build UI
+    var primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || agentDef.color;
+
+    // Avatar — use customAvatar from Firestore if set, then default photo
+    var avatarSrc = (ragData && ragData.customAvatar) ? ragData.customAvatar : agentDef.avatar;
+    var avatarEl = document.getElementById('agent-avatar');
+    avatarEl.innerHTML = '<img src="' + avatarSrc + '" alt="' + agentDef.name + '">';
+    agentAvatarHtml = '<div class="msg-avatar"><img src="' + avatarSrc + '" alt=""></div>';
+
+    // Company logo in header (top corner)
+    if (companyLogo) {
+        var logoHeader = document.getElementById('company-logo-header');
+        logoHeader.src = companyLogo;
+        logoHeader.style.display = 'block';
+    }
+
+    // Agent name & role
+    document.getElementById('agent-name-el').textContent = agentDef.name;
+    document.getElementById('agent-role-el').textContent = companyName
+        ? agentDef.title + ' | ' + companyName
+        : agentDef.title;
+
+    // Show UI
+    document.getElementById('loading-screen').style.display = 'none';
+    document.getElementById('chat-header').style.display   = '';
+    document.getElementById('messages').style.display      = '';
+    document.getElementById('input-area').style.display    = '';
+
+    // Start analytics session
+    await _sessionStart();
+
+    // 5. Welcome — introduce, then ask name
+    _playWelcomeMessage();
+}
+
+function _playWelcomeMessage() {
+    showTyping();
+    setTimeout(function() {
+        var intro;
+        var askName;
+        
+        var requireLead = true;
+        if (ragData && ragData.requireLead === false) requireLead = false;
+        
+        if ((agentId === 'tech-support' && urlClientName && urlClientPhone) || !requireLead) {
+            _session.customerName = urlClientName || 'לקוח';
+            if (urlClientPhone) _session.customerPhone = urlClientPhone;
+            _session._collectStep = null;
+            _session._isTechSupport = agentId === 'tech-support';
+            
+            if (agentId === 'tech-support' && urlClientName) {
+                var compStr = companyName ? ' של חברת ' + companyName : '';
+                intro = 'שלום ' + urlClientName + '! 👋 אני ' + agentDef.name + ' מהתמיכה הטכנית' + compStr + '. עליתי מולך. במה אפשר לעזור לך כרגע?';
+            } else if (companyName) {
+                intro = 'שלום וברוכים הבאים! 👋 אני ' + agentDef.name + ', ' + agentDef.title + ' של חברת ' + companyName + '. אשמח לעזור לך היום.';
+            } else {
+                intro = 'שלום וברוכים הבאים! 👋 אני ' + agentDef.name + ', ' + agentDef.title + '. אשמח לעזור לך היום.';
+            }
+            
+            addBotMsg(intro);
+            _saveMessage(intro, 'agent');
+            setTimeout(function() {
+                document.getElementById('msg-input').disabled = false;
+                document.getElementById('send-btn').disabled = false;
+                document.getElementById('msg-input').focus();
+            }, 500);
+            return;
+        }
+        
+        if (agentId === 'tech-support' && urlClientName) {
+            var compStr = companyName ? ' של חברת ' + companyName : '';
+            intro = 'שלום ' + urlClientName + '! 👋 אני ' + agentDef.name + ' מהתמיכה הטכנית' + compStr + '. עליתי מולך.';
+            askName = 'עם מי אני מדבר/ת עכשיו? (שם פרטי)';
+            _session.customerName = urlClientName; 
+            _session._isTechSupport = true;
+        } else {
+            if (companyName) {
+                intro = 'שלום וברוכים הבאים! 👋 אני ' + agentDef.name + ', ' + agentDef.title + ' של חברת ' + companyName + '. אשמח לעזור לך היום.';
+            } else {
+                intro = 'שלום וברוכים הבאים! 👋 אני ' + agentDef.name + ', ' + agentDef.title + '. אשמח לעזור לך היום.';
+            }
+            askName = 'לפני שנתחיל — מה שמך המלא? 😊';
+        }
+        
+        addBotMsg(intro);
+        _saveMessage(intro, 'agent');
+
+        // After a longer delay, ask for name
+        showTyping();
+        setTimeout(function() {
+            addBotMsg(askName);
+            _saveMessage(askName, 'agent');
+            _session._collectStep = 'name';
+        }, 2200);
+    }, 2200);
+
+    document.getElementById('msg-input').focus();
+}
+
+// ─── COLOR HELPERS ───
+function darken(hex, pct) {
+    hex = hex.replace('#','');
+    if (hex.length === 3) hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+    var r = Math.max(0, parseInt(hex.slice(0,2),16) - pct);
+    var g = Math.max(0, parseInt(hex.slice(2,4),16) - pct);
+    var b = Math.max(0, parseInt(hex.slice(4,6),16) - pct);
+    return '#' + [r,g,b].map(function(x){ return x.toString(16).padStart(2,'0'); }).join('');
+}
+
+// ─── MESSAGE HELPERS ───
+function nowStr() {
+    return new Date().toLocaleTimeString('he-IL', { hour:'2-digit', minute:'2-digit' });
+}
+
+function cleanMarkdown(t) {
+    t = t.replace(/\*\*([^*]+)\*\*/g,'$1').replace(/\*([^*]+)\*/g,'$1');
+    t = t.replace(/__([^_]+)__/g,'$1').replace(/_([^_]+)_/g,'$1');
+    t = t.replace(/^#{1,6}\s+/gm,'').replace(/^---+$/gm,'').replace(/^___+$/gm,'');
+    t = t.replace(/```[\s\S]*?```/g,'').replace(/`([^`]+)`/g,'$1');
+    t = t.replace(/\n{3,}/g,'\n\n');
+    return t.trim();
+}
+
+function esc(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+
+function renderMarkdownLinks(s) {
+    return s.replace(/\[([^\]]+)\]\((https?:\/\/[^\)]+)\)/g, '<a href="$2" target="_blank" style="text-decoration:underline; font-weight:600;">$1</a>');
+}
+
+function addBotMsg(text) {
+    var typing = document.getElementById('typing-row');
+    if (typing) typing.remove();
+    var msgs = document.getElementById('messages');
+    var row = document.createElement('div');
+    row.className = 'msg-row bot';
+    var finalHtml = renderMarkdownLinks(esc(cleanMarkdown(text)));
+    row.innerHTML = agentAvatarHtml
+        + '<div class="msg-col">'
+        + '<div class="bubble">' + finalHtml + '</div>'
+        + '<div class="msg-time">' + nowStr() + '</div>'
+        + '</div>';
+    msgs.appendChild(row);
+    msgs.scrollTop = msgs.scrollHeight;
+}
+
+function addUserMsg(text) {
+    var msgs = document.getElementById('messages');
+    var row = document.createElement('div');
+    row.className = 'msg-row user';
+    row.innerHTML = '<div class="msg-avatar" style="background:var(--primary)33;">👤</div>'
+        + '<div class="msg-col">'
+        + '<div class="bubble">' + esc(text) + '</div>'
+        + '<div class="msg-time">' + nowStr() + '</div>'
+        + '</div>';
+    msgs.appendChild(row);
+    msgs.scrollTop = msgs.scrollHeight;
+}
+
+function showTyping() {
+    var msgs = document.getElementById('messages');
+    var row = document.createElement('div');
+    row.className = 'msg-row bot';
+    row.id = 'typing-row';
+    row.innerHTML = agentAvatarHtml
+        + '<div class="msg-col"><div class="bubble" style="padding:12px 16px;">'
+        + '<div class="typing-dots"><span></span><span></span><span></span></div>'
+        + '</div></div>';
+    msgs.appendChild(row);
+    msgs.scrollTop = msgs.scrollHeight;
+}
+
+// ─── SEND ───
+async function sendMessage() {
+    var input   = document.getElementById('msg-input');
+    var sendBtn = document.getElementById('send-btn');
+    var text    = input.value.trim();
+    if (!text) return;
+
+    input.value = '';
+    input.style.height = 'auto';
+    input.disabled  = true;
+    sendBtn.disabled = true;
+
+    addUserMsg(text);
+    _saveMessage(text, 'user');
+
+    // ── Name/Phone collection flow ──
+    if (_session._collectStep === 'name') {
+        var nameInput = text.trim();
+        // Basic validation: name should be at least 2 chars and not be a number
+        if (nameInput.length < 2 || /^\d+$/.test(nameInput)) {
+            var retryName = _session._isTechSupport ? 'אשמח לדעת את השם הפרטי שלך כדי שנוכל להמשיך. 🙏' : 'אני צריך/ה את שמך המלא — שם פרטי ושם משפחה. אפשר לנסות שוב? 🙏';
+            addBotMsg(retryName);
+            _saveMessage(retryName, 'agent');
+            input.disabled = false;
+            sendBtn.disabled = false;
+            input.focus();
+            return;
+        }
+        if (_session._isTechSupport) {
+            _session.customerName = _session.customerName + ' (' + nameInput + ')';
+        } else {
+            _session.customerName = nameInput;
+        }
+        _session._collectStep = 'phone';
+        if (_session.id) {
+            _db.collection('agentSessions').doc(_session.id).update({ customerName: _session.customerName }).catch(function(){});
+        }
+        var askPhone = _session._isTechSupport 
+            ? 'נעים מאוד, ' + nameInput + '! 😊\nהמספר ששמור אצלנו במערכת הוא ' + (urlClientPhone || '050-0000000') + '.\nהאם תרצה שנעדכן אצלנו מספר נייד אחר, או שזה המספר הנכון? (כן זה המספר / להקליד מספר חדש)'
+            : 'נעים מאוד, ' + nameInput + '! 😊\nהאם תוכל/י לשתף מספר נייד? ככה נוכל ליצור קשר במקרה שהשיחה תתנתק.';
+        addBotMsg(askPhone);
+        _saveMessage(askPhone, 'agent');
+        input.disabled = false;
+        sendBtn.disabled = false;
+        input.focus();
+        return;
+    }
+    if (_session._collectStep === 'phone') {
+        var phoneClean = text.replace(/[\s\-\.]/g, '');
+        
+        if (_session._isTechSupport) {
+            var answerL = text.trim().toLowerCase();
+            if (['כן', 'נכון', 'כן זה המספר', 'זה המספר', 'yes', 'y'].includes(answerL) || answerL.includes('נכון') || answerL.includes('כן')) {
+                _session.customerPhone = urlClientPhone || '050-0000000';
+            } else if (/^0[0-9]{8,9}$/.test(phoneClean) || /^\+?972[0-9]{8,9}$/.test(phoneClean)) {
+                _session.customerPhone = phoneClean;
+            } else {
+                var retrySupportPhone = 'לא זיהיתי מספר תקין. אנא הזן מספר נייד חדש או כתוב "כן" אם המספר שרשום הוא הנכון.';
+                addBotMsg(retrySupportPhone);
+                _saveMessage(retrySupportPhone, 'agent');
+                input.disabled = false;
+                sendBtn.disabled = false;
+                input.focus();
+                return;
+            }
+            // Skip confirm step for tech support
+            _session._collectStep = null;
+            if (_session.id) {
+                _db.collection('agentSessions').doc(_session.id).update({
+                    customerName: _session.customerName || '',
+                    customerPhone: _session.customerPhone || ''
+                }).catch(function(){});
+            }
+            var readyMsgTech = 'מצוין, ' + _session.customerName.split(' ')[0] + '! 🎉 הפרטים מעודכנים. איך אפשר לעזור לך כרגע?';
+            addBotMsg(readyMsgTech);
+            _saveMessage(readyMsgTech, 'agent');
+            input.disabled = false;
+            sendBtn.disabled = false;
+            input.focus();
+            return;
+        }
+
+        // Basic phone validation
+        if (!/^0[0-9]{8,9}$/.test(phoneClean) && !/^\+?972[0-9]{8,9}$/.test(phoneClean)) {
+            var retryPhone = 'המספר לא נראה תקין. אנא הקלד מספר נייד ישראלי (למשל 050-1234567):';
+            addBotMsg(retryPhone);
+            _saveMessage(retryPhone, 'agent');
+            input.disabled = false;
+            sendBtn.disabled = false;
+            input.focus();
+            return;
+        }
+        _session.customerPhone = phoneClean;
+        _session._collectStep = 'confirm';
+        var confirmMsg = 'תודה! רק לוודא שקלטתי נכון:\n👤 שם: ' + _session.customerName + '\n📱 טלפון: ' + phoneClean + '\n\nהאם הפרטים נכונים? (כן / לא)';
+        addBotMsg(confirmMsg);
+        _saveMessage(confirmMsg, 'agent');
+        input.disabled = false;
+        sendBtn.disabled = false;
+        input.focus();
+        return;
+    }
+    if (_session._collectStep === 'confirm') {
+        var answer = text.trim().toLowerCase();
+        if (answer === 'לא' || answer === 'no' || answer.includes('לא') || answer.includes('תקן')) {
+            _session._collectStep = 'name';
+            var fixMsg = 'בסדר, בוא נתחיל מחדש. מה שמך המלא?';
+            addBotMsg(fixMsg);
+            _saveMessage(fixMsg, 'agent');
+            input.disabled = false;
+            sendBtn.disabled = false;
+            input.focus();
+            return;
+        }
+        // Confirmed — save
+        _session._collectStep = null;
+        if (_session.id) {
+            _db.collection('agentSessions').doc(_session.id).update({
+                customerName: _session.customerName || '',
+                customerPhone: _session.customerPhone || ''
+            }).catch(function(){});
+            _db.collection('chatContacts').add({
+                name: _session.customerName || '',
+                phone: _session.customerPhone || '',
+                sessionId: _session.id,
+                agentId: agentId,
+                companyId: clientKey || 'onstaffai',
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            }).catch(function(){});
+        }
+        var readyMsg = 'מצוין, ' + _session.customerName + '! 🎉 קיבלתי את הפרטים. במה אוכל לעזור לך היום?';
+        addBotMsg(readyMsg);
+        _saveMessage(readyMsg, 'agent');
+        input.disabled = false;
+        sendBtn.disabled = false;
+        input.focus();
+        return;
+    }
+
+    // If human is active — don't send to AI
+    if (_session.humanActive) {
+        input.disabled  = false;
+        sendBtn.disabled = false;
+        return;
+    }
+    showTyping();
+    chatHistory.push({ role: 'user', content: text });
+    _session.msgCount++;
+
+    // Build RAG context
+    var ragCtx = '', hasRag = false;
+    var nowIsrael = new Date().toLocaleString('he-IL', { timeZone: 'Asia/Jerusalem', dateStyle: 'full', timeStyle: 'short' });
+    var timeContext = '\n\nהיום והשעה הנוכחיים הם: ' + nowIsrael + '. השתמש במידע זה כדי להבין מושגים כמו "היום", "מחר", "חודש הבא", "שבוע שעבר" וכו\'.';
+
+    
+    // Merge QA
+    var mergedQA = [];
+    if (globalRagData && globalRagData.qa) mergedQA = mergedQA.concat(globalRagData.qa);
+    if (ragData && ragData.qa) mergedQA = mergedQA.concat(ragData.qa); // specific overrides later or just merged
+    
+    // Merge Docs
+    var mergedDocs = [];
+    if (globalRagData && globalRagData.docs) {
+        globalRagData.docs.forEach(function(d) {
+            mergedDocs.push({ title: d.name || d.title || 'מסמך כללי', content: d.content || d, isGlobal: true });
+        });
+    }
+    if (ragData && ragData.docs) {
+        ragData.docs.forEach(function(d) {
+            mergedDocs.push({ title: d.name || d.title || 'מסמך ספציפי לסוכן', content: d.content || d, isGlobal: false });
+        });
+    }
+
+    if (ragData && ragData.behavior) {
+        ragCtx += '\n\n=== הוראות התנהגות מיוחדות ===\n' + ragData.behavior + '\n';
+    }
+
+    if (mergedQA.length > 0) {
+        hasRag = true;
+        ragCtx += '\n\n=== מאגר שאלות ותשובות (Q&A) ===\n';
+        mergedQA.forEach(function(qa, i) {
+            ragCtx += '\n' + (i+1) + '. שאלה: ' + qa.q + '\n   תשובה: ' + qa.a;
+        });
+        ragCtx += '\n\nחובה: אם השאלה קשורה לנושא מהרשימה — ענה לפיו בדיוק.';
+    }
+
+    if (mergedDocs.length > 0) {
+        hasRag = true;
+        ragCtx += '\n\n=== מסמכי רקע (RAG) ===\n';
+        mergedDocs.forEach(function(doc, i) {
+            ragCtx += '\n--- ' + doc.title + ' ' + (doc.isGlobal ? '(מסמך חברה כללי)' : '(מסמך ספציפי לסוכן)') + ' ---\n' + doc.content + '\n';
+        });
+        ragCtx += '\nחובה: התבסס על המידע במסמכי הרקע כדי לענות על שאלות הלקוח. התייחס למידע במסמכים כעובדות מוגמרות.';
+        ragCtx += '\nהערה קריטית: אם קיים חוסר התאמה או סתירה בין "מסמך חברה כללי" לבין "מסמך ספציפי לסוכן", עליך לתת עדיפות מוחלטת למידע שנמצא ב"מסמך ספציפי לסוכן"!';
+    }
+
+    // Merge URLs
+    var mergedUrls = [];
+    if (globalRagData && globalRagData.urls) mergedUrls = mergedUrls.concat(globalRagData.urls);
+    if (ragData && ragData.urls) mergedUrls = mergedUrls.concat(ragData.urls);
+
+    if (mergedUrls.length > 0) {
+        hasRag = true;
+        ragCtx += '\n\n=== אתרי אינטרנט ועמודי נחיתה סרוקים ===\n';
+        mergedUrls.forEach(function(urlData, i) {
+            ragCtx += '\n--- ' + urlData.url + ' ---\n' + urlData.content + '\n';
+        });
+        ragCtx += '\nחובה: התבסס אך ורק על התוכן הסרוק מאתרי האינטרנט. לעולם אל תמציא מופעים, תאריכים או נתונים (Do not hallucinate). אם המידע אינו קיים במפורש בטקסט הסרוק, ציין שאין לך את המידע. לעולם אל תנחש או תמציא הופעות.';
+    }
+
+    var instructions = 'ענה תמיד בעברית. כתוב בשפה ברורה ופשוטה ללא עיצוב טקסט בולט. **המותר היחיד הוא שימוש בקישורים (Links) בפורמט Markdown**, לדוגמה: [לרכישת כרטיסים](https://url). כאשר אתה מספק קישור ללקוח, חובה להשתמש בפורמט זה בדיוק. '
+        + (hasRag ? 'חובה: בדוק את מאגר הידע לפני כל תשובה. לעולם אל תגיד "אין לי גישה לאינטרנט" או "אין לי גישה למידע זה". המידע המלא מהאתרים כבר סרוק וזמין לך במסמכי הרקע. אם משהו לא מופיע שם, פשוט ציין שהמידע לא קיים כרגע במערכת ותציע עזרה אחרת. ' : 'ענה בידידותיות ומקצועיות. ')
+        + 'אם אתה מזהה שהלקוח מתוסכל, כועס, או שהוא חוזר על אותן שאלות שוב ושוב ללא מענה מספק - הוסף את המחרוזת המדויקת "[HUMAN_NEEDED]" בסוף התשובה שלך.';
+
+    var websiteRef = companyWebsite ? '\n\nאתר החברה: ' + companyWebsite + ' — ניתן להפנות לקוחות לאתר לפרטים נוספים.' : '';
+    var systemPrompt = 'אתה ' + agentDef.name + ', ' + agentDef.title
+        + (companyName ? ' של חברת ' + companyName : '') + '. ' + instructions + ragCtx + timeContext + websiteRef;
+
+    var key = claudeKey || '';
+    var reply;
+
+    if (text === 'debug_rag') {
+        var debugInfo = 'clientKey: ' + clientKey + '\n';
+        debugInfo += 'agentId: ' + agentId + '\n';
+        debugInfo += 'globalRagData: ' + (globalRagData ? 'EXISTS (docs: ' + (globalRagData.docs ? globalRagData.docs.length : 0) + ')' : 'NULL') + '\n';
+        debugInfo += 'ragData: ' + (ragData ? 'EXISTS (docs: ' + (ragData.docs ? ragData.docs.length : 0) + ')' : 'NULL') + '\n';
+        debugInfo += 'mergedDocs length: ' + mergedDocs.length + '\n';
+        
+        reply = 'DEBUG RAG CONTEXT:\n\n' + debugInfo + '\n---\n' + (ragCtx || 'EMPTY');
+        chatHistory.push({ role: 'assistant', content: reply });
+        addBotMsg(reply);
+        _saveMessage(reply, 'agent');
+        input.disabled = false;
+        sendBtn.disabled = false;
+        input.focus();
+        return;
+    }
+
+    if (!key) {
+        reply = 'מצטערים, הסוכן אינו זמין כרגע. נסה שוב מאוחר יותר.';
+    } else {
+        var isAnthropic = key.startsWith('sk-ant-');
+
+        if (isAnthropic) {
+            var modelsToTry = [
+                'claude-3-5-sonnet-20241022',
+                'claude-3-5-sonnet-20240620',
+                'claude-3-haiku-20240307',
+                'claude-3-sonnet-20240229',
+                'claude-2.1',
+                'claude-instant-1.2'
+            ];
+            var success = false;
+            var lastErr = null;
+
+            for (var i = 0; i < modelsToTry.length; i++) {
+                var currentModel = modelsToTry[i];
+                try {
+                    var resp = await fetch('https://api.anthropic.com/v1/messages', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'x-api-key': key,
+                            'anthropic-version': '2023-06-01',
+                            'anthropic-dangerous-direct-browser-access': 'true'
+                        },
+                        body: JSON.stringify({
+                            model: currentModel,
+                            max_tokens: 600,
+                            system: systemPrompt,
+                            messages: chatHistory.slice(-12)
+                        })
+                    });
+
+                    if (!resp.ok) {
+                        var err = await resp.json().catch(function(){ return {}; });
+                        lastErr = err;
+                        // If it's a not_found_error for the model, try the next one
+                        if (err && err.error && err.error.message && err.error.message.includes(currentModel)) {
+                            console.warn('Model not allowed for this key:', currentModel, 'Trying next...');
+                            continue;
+                        } else if (err && err.error && err.error.type === 'not_found_error') {
+                            continue;
+                        }
+                        // For other errors (like invalid key, out of credits), stop and show error
+                        reply = 'שגיאה בחיבור: ' + (err.error ? err.error.message : JSON.stringify(err));
+                        break;
+                    } else {
+                        var data = await resp.json();
+                        if (data.content && data.content[0]) {
+                            var rawReply = data.content[0].text;
+                            if (rawReply.includes('[HUMAN_NEEDED]')) {
+                                rawReply = rawReply.replace(/\[HUMAN_NEEDED\]/g, '').trim();
+                                document.getElementById('human-btn-row').style.display = 'block';
+                            }
+                            reply = rawReply;
+                        } else {
+                            reply = '(אין תגובה מ-Anthropic)';
+                        }
+                        success = true;
+                        break; // Successfully got an answer
+                    }
+                } catch(e) {
+                    lastErr = e;
+                    continue; // On network error, could retry or break. Let's retry just in case.
+                }
+            }
+
+            if (!success && !reply) {
+                reply = 'שגיאה זמנית. נסה שוב. ככל הנראה אין הרשאה למודלים או נגמרה מכסת השימוש. ' + (lastErr && lastErr.error ? '(' + lastErr.error.message + ')' : '');
+            }
+        } else {
+            // OPENAI LOGIC
+            try {
+                var openAiMessages = [{ role: 'system', content: systemPrompt }].concat(chatHistory.slice(-12));
+                var resp = await fetch('https://api.openai.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + key
+                    },
+                    body: JSON.stringify({
+                        model: 'gpt-4o-mini',
+                        max_tokens: 600,
+                        messages: openAiMessages
+                    })
+                });
+                if (!resp.ok) {
+                    var err = await resp.json().catch(function(){ return {}; });
+                    reply = 'שגיאת OpenAI: ' + (err.error ? err.error.message : JSON.stringify(err));
+                } else {
+                    var data = await resp.json();
+                    if (data.choices && data.choices[0] && data.choices[0].message) {
+                        var rawReply = data.choices[0].message.content;
+                        if (rawReply.includes('[HUMAN_NEEDED]')) {
+                            rawReply = rawReply.replace(/\[HUMAN_NEEDED\]/g, '').trim();
+                            document.getElementById('human-btn-row').style.display = 'block';
+                        }
+                        reply = rawReply;
+                    } else {
+                        reply = '(אין תגובה מ-OpenAI)';
+                    }
+                }
+            } catch (e) {
+                reply = 'שגיאת חיבור ל-OpenAI. נסה שוב.';
+            }
+        }
+    }
+
+    chatHistory.push({ role: 'assistant', content: reply });
+    addBotMsg(reply);
+    _saveMessage(reply, 'agent');
+    _session.msgCount++;
+    if (!_session.resolved && _RESOLVE_KEYWORDS.some(function(k){ return reply.includes(k); })) {
+        _session.resolved = true;
+        if (_session.id) _db.collection('agentSessions').doc(_session.id).update({ resolved: true }).catch(function(){});
+    }
+    input.disabled  = false;
+    sendBtn.disabled = false;
+    input.focus();
+}
+
+// ─── AUTO-RESIZE + KEYBOARD ───
+var msgInput = document.getElementById('msg-input');
+msgInput.addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 130) + 'px';
+});
+msgInput.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+});
+document.getElementById('send-btn').addEventListener('click', sendMessage);
+
+// ─── START ───
+init();
+</script>
+</body>
+</html>

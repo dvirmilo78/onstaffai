@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script>
+        emailjs.init({ publicKey: '7IoARO-EcljLAzrok' });
+        window.onload = function() {
+            emailjs.send('service_ne5z4wv', 'template_sl4n308', {
+                "user_name": "דביר",
+                "onboarding_link": "https://onstaffai.web.app/onboarding.html",
+                "to_email": "dvir@onstaffai.com",
+                "to_name": "דביר"
+            }).then(function(response) {
+                document.body.innerHTML = 'SUCCESS!';
+                console.log('SUCCESS!', response.status, response.text);
+            }, function(error) {
+                document.body.innerHTML = 'FAILED... ' + JSON.stringify(error);
+                console.log('FAILED...', error);
+            });
+        }
+    </script>
+</head>
+<body>
+    Sending...
+</body>
+</html>

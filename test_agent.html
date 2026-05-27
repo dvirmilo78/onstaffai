@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>עמוד בדיקה - סוכן שירות לקוחות</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+            color: #333;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        h1 {
+            color: #ea580c;
+        }
+        /* Styling for the floating widget */
+        #onstaff-widget-container {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: 380px;
+            height: 600px;
+            max-height: 80vh;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+            z-index: 999999;
+            background: #fff;
+        }
+        #onstaff-widget-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>עמוד בדיקה - סוכן שירות לקוחות</h1>
+        <p>חברה: <span id="display-company-name">אלפא</span> (מזהה: <span id="display-client-key">alpha-company-1234</span>)</p>
+        <p>סוכן הצ'אט נטען בחלונית צפה (Widget) בפינה התחתונה.</p>
+        <p>הסוכן מקושר ל- <code id="display-url">chat.html?agent=customer-service&key=alpha-company-1234</code></p>
+    </div>
+
+    <!-- Agent Widget Test Embed -->
+    <div id="onstaff-widget-container">
+        <!-- Using the deployed URL or relative path if deployed -->
+        <iframe id="onstaff-widget-iframe" src="" allow="microphone"></iframe>
+    </div>
+
+    <script>
+        const params = new URLSearchParams(window.location.search);
+        let key = params.get('key');
+        if (!key) {
+            try { key = sessionStorage.getItem('client_auth') || localStorage.getItem('client_auth'); } catch(e) {}
+        }
+        key = key || 'alpha-company-1234';
+        
+        let cName = params.get('name');
+        if (!cName) {
+            try { cName = sessionStorage.getItem('client_name'); } catch(e) {}
+        }
+        cName = cName || 'אלפא';
+        
+        const agentId = params.get('agent') || 'customer-service';
+        
+        document.getElementById('display-client-key').textContent = key;
+        document.getElementById('display-company-name').textContent = cName;
+        
+        const frameUrl = `chat.html?v=${Date.now()}&agent=${agentId}&key=${key}&companyName=${encodeURIComponent(cName)}`;
+        document.getElementById('display-url').textContent = frameUrl;
+        document.getElementById('onstaff-widget-iframe').src = frameUrl;
+
+        // Listen for close event from the chat widget
+        window.addEventListener('message', (e) => {
+            if (e.data && e.data.type === 'onstaffai-close') {
+                document.getElementById('onstaff-widget-container').style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

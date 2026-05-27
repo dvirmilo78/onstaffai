@@ -1,0 +1,237 @@
+// src/sections.jsx — metrics, agents grid, how it works, ROI, testimonials, pricing, FAQ, CTA, footer
+
+const MetricStrip = ({ metrics }) => (
+  <div className="metric-strip">
+    <div className="wrap metric-strip-inner">
+      {metrics.map((m, i) => (
+        <div key={i} className="metric">
+          <span className="num">{m.num}</span>
+          <span className="lbl">{m.lbl}</span>
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const SectionHead = ({ tag, h, p, align = "split" }) => (
+  <div className="section-head">
+    <div>
+      <span className="tag">{tag}</span>
+      <h2>{h}</h2>
+    </div>
+    {p && <p>{p}</p>}
+  </div>
+);
+
+const AgentsGrid = ({ agents, head, onPick }) => (
+  <section id="agents">
+    <div className="wrap">
+      <SectionHead {...head}/>
+      <div className="agent-grid">
+        {agents.map((a, i) => (
+          <div key={a.k} className="agent-card" onClick={() => onPick && onPick(a.k)}>
+            <span className="agent-chip">{String(i+1).padStart(2,'0')} · {a.short}</span>
+            <AgentIllu k={a.k} color={a.color}/>
+            <h3>{a.name}</h3>
+            <p>{a.desc}</p>
+            <div className="agent-stats">
+              {a.stats.map(([k,v], j) => (
+                <div key={j}><b>{v}</b> · {k}</div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+);
+
+const HowItWorks = ({ head, steps }) => {
+  const colors = ["var(--butter)","var(--sky)","var(--mint)","var(--rose)"];
+  const icons = [
+    <path d="M5 10h14M5 14h14M5 18h9" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>,
+    <path d="M12 4v16M4 12h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>,
+    <path d="M6 8l-3 3 3 3M18 8l3 3-3 3M14 5l-4 14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>,
+    <path d="M6 12l4 4 8-10" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" fill="none"/>,
+  ];
+  return (
+    <section id="how">
+      <div className="wrap">
+        <SectionHead {...head}/>
+        <div className="steps">
+          {steps.map((s, i) => (
+            <div key={i} className="step">
+              <div className="step-icon" style={{ background: colors[i] }}>
+                <svg width="24" height="24" viewBox="0 0 24 24" style={{ color: "var(--ink)" }}>{icons[i]}</svg>
+              </div>
+              <div className="step-num">STEP {String(i+1).padStart(2,'0')}</div>
+              <h3>{s.t}</h3>
+              <p>{s.d}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+const ROI = ({ head, t, lang }) => {
+  const [emp, setEmp] = React.useState(3);
+  const [hours, setHours] = React.useState(28);
+  const [salary, setSalary] = React.useState(lang === "he" ? 11000 : 3200);
+  const monthly = Math.round(emp * salary * 0.62);
+  const annual = monthly * 12;
+  const timeBack = Math.round(hours * emp * 0.78);
+  const prod = Math.min(85, 30 + hours);
+  const cur = lang === "he" ? "₪" : "$";
+  const fmt = (n) => n.toLocaleString(lang === "he" ? "he-IL" : "en-US");
+  return (
+    <section id="roi" style={{ background: "var(--bg-2)" }}>
+      <div className="wrap">
+        <SectionHead {...head}/>
+        <div className="roi-wrap">
+          <div className="roi-form">
+            <div className="field">
+              <div className="field-val"><label>{t.employees}</label><span className="v">{emp}</span></div>
+              <input type="range" min="1" max="20" value={emp} onChange={e => setEmp(+e.target.value)}/>
+            </div>
+            <div className="field">
+              <div className="field-val"><label>{t.hours}</label><span className="v">{hours}h</span></div>
+              <input type="range" min="5" max="60" value={hours} onChange={e => setHours(+e.target.value)}/>
+            </div>
+            <div className="field">
+              <div className="field-val"><label>{t.salary}</label><span className="v">{cur}{fmt(salary)}</span></div>
+              <input type="range" min={lang==="he"?6000:2000} max={lang==="he"?25000:7500} step="500" value={salary} onChange={e => setSalary(+e.target.value)}/>
+            </div>
+            <p style={{ fontSize: 13, color: "var(--mute)", marginTop: 24 }}>{t.note}</p>
+          </div>
+            <div className="roi-result">
+              <div style={{ fontSize: 13, opacity: .7, fontFamily: "JetBrains Mono" }}>{t.result.toUpperCase()}</div>
+              <div className="roi-num">
+                <span className="roi-num-value">{cur}{fmt(annual)}</span>
+                <span className="unit">/{lang==="he"?"שנה":"yr"}</span>
+              </div>
+            <div className="roi-breakdown">
+              <div className="roi-row"><span>{t.monthly}</span><b>{cur}{fmt(monthly)}</b></div>
+              <div className="roi-row"><span>{t.time}</span><b>{timeBack}h / {lang==="he"?"שבוע":"wk"}</b></div>
+              <div className="roi-row"><span>{t.productivity}</span><b>+{prod}%</b></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+const Testimonials = ({ head, quotes }) => (
+  <section>
+    <div className="wrap">
+      <SectionHead {...head}/>
+      <div className="quotes">
+        {quotes.map((q, i) => (
+          <div key={i} className="quote">
+            <span className="quote-metric">● {q.metric}</span>
+            <div className="big">“</div>
+            <p>{q.body}</p>
+            <div className="quote-author">
+              <div className="av" style={{ background: q.color }}>{q.name[0]}</div>
+              <div>
+                <b>{q.name}</b>
+                <span>{q.role}</span>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+);
+
+const Pricing = ({ head, plans, ctaLabel }) => (
+  <section id="pricing" style={{ background: "var(--bg-2)" }}>
+    <div className="wrap">
+      <SectionHead {...head}/>
+      <div className="plans">
+        {plans.map((p, i) => (
+          <div key={i} className={"plan" + (p.featured ? " featured" : "")}>
+            <div className="plan-name">
+              <h3>{p.name}</h3>
+              <span className="badge">{p.badge}</span>
+            </div>
+            <div className="price">{p.price}<span className="unit">{p.unit}</span></div>
+            <ul>{p.feats.map((f, j) => <li key={j}>{f}</li>)}</ul>
+            <a className={"btn " + (p.featured ? "btn-accent" : "btn-primary")} style={{ width: "100%", justifyContent: "center", marginTop: "auto" }}>{p.cta}</a>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+);
+
+const FAQ = ({ head, faq }) => {
+  const [open, setOpen] = React.useState(0);
+  return (
+    <section id="faq">
+      <div className="wrap">
+        <div className="faq-wrap">
+          <div>
+            <span className="tag" style={{ fontFamily: "JetBrains Mono", fontSize: 12, color: "var(--mute)", textTransform: "uppercase", letterSpacing: "0.1em" }}>{head.tag}</span>
+            <h2 style={{ fontSize: "clamp(34px, 4.4vw, 56px)", lineHeight: 1.02, letterSpacing: "-0.03em", fontWeight: 800, marginTop: 12 }}>{head.h}</h2>
+          </div>
+          <div className="faq-list">
+            {faq.map((f, i) => (
+              <div key={i} className={"faq-item" + (open === i ? " open" : "")}>
+                <button className="faq-q" onClick={() => setOpen(open === i ? -1 : i)}>
+                  <span>{f.q}</span>
+                  <span className="plus">+</span>
+                </button>
+                <div className="faq-a"><div className="faq-a-inner">{f.a}</div></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+const CTABanner = ({ t }) => (
+  <section>
+    <div className="wrap">
+      <div className="cta-banner">
+        <div className="cta-shape" style={{ top: -80, insetInlineStart: -80 }}/>
+        <div className="cta-shape" style={{ bottom: -80, insetInlineEnd: -80 }}/>
+        <h2>{t.h}</h2>
+        <p>{t.p}</p>
+        <a className="btn btn-accent">{t.btn} →</a>
+      </div>
+    </div>
+  </section>
+);
+
+const Footer = ({ t }) => (
+  <footer>
+    <div className="wrap">
+      <div className="foot-grid">
+        <div className="foot-col">
+          <div className="brand" style={{ marginBottom: 12 }}>
+            <LogoMark/> OnStaffAI
+          </div>
+          <p style={{ maxWidth: 280 }}>{t.tagline}</p>
+        </div>
+        {t.cols.map((c, i) => (
+          <div key={i} className="foot-col">
+            <h5>{c.h}</h5>
+            {c.links.map((l, j) => <a key={j} href="#">{l}</a>)}
+          </div>
+        ))}
+      </div>
+      <div className="foot-bot">
+        <span>{t.copy}</span>
+        <span className="mono">v3.2.1 · all systems go ●</span>
+      </div>
+    </div>
+  </footer>
+);
+
+Object.assign(window, { MetricStrip, AgentsGrid, HowItWorks, ROI, Testimonials, Pricing, FAQ, CTABanner, Footer, SectionHead });

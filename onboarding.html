@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-H73PEQ49ZT"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-H73PEQ49ZT');
+</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OnStaffAI | אשף הקמת חשבון</title>
+    <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon.png?v=2">
+    <link rel="apple-touch-icon" href="/assets/favicon.png?v=2">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        :root {
+            --bg-color: #fafaf7;
+            --surface-color: #ffffff;
+            --surface-color-light: #f7f5f1;
+            --surface-border: #ede9e0;
+            --text-primary: #111111;
+            --text-secondary: #78746b;
+            --primary-glow: rgba(234, 88, 12, 0.15);
+            --primary-color: #ea580c;
+            --accent-primary: #ea580c;
+            --accent-color: #f59e0b;
+        }
+
+        body { 
+            background: var(--bg-color); 
+            display: flex; flex-direction: column; min-height: 100vh;
+            align-items: center; justify-content: center;
+            padding: 2rem 0;
+            color: var(--text-primary);
+        }
+        
+        .header-logo { margin-bottom: 2rem; text-align: center; }
+        .header-logo img { height: 44px; filter: drop-shadow(0 0 10px rgba(234, 88, 12, 0.2)); }
+
+        .wizard-container { 
+            width: 90%; max-width: 760px;
+            background: var(--surface-color); 
+            border: 1px solid var(--surface-border);
+            border-radius: 24px; 
+            padding: 2.5rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+        }
+
+        .step-indicator { 
+            display: flex; gap: 8px; margin-bottom: 2.5rem; 
+            border-bottom: 1px solid var(--surface-border);
+            padding-bottom: 1.5rem; overflow-x: auto;
+        }
+        
+        .modal-tab { 
+            padding: 10px 18px; border-radius: 12px; border: none; 
+            background: transparent; color: var(--text-secondary); 
+            font-weight: 600; cursor: default; white-space: nowrap; 
+            font-size: 15px; transition: all 0.3s; display: flex; align-items: center; gap: 8px;
+        }
+        .modal-tab.active { background: rgba(234, 88, 12, 0.1); color: var(--primary-color); border: 1px solid rgba(234, 88, 12, 0.2); }
+        .modal-tab.done { color: var(--text-primary); background: var(--surface-color-light); border: 1px solid var(--surface-border); }
+        .modal-tab i { font-size: 1.25rem; }
+
+        .step-content { display: none; animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+        .step-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        h2 { font-size: 1.8rem; margin-bottom: 1.5rem; color: var(--text-primary); font-weight: 700; letter-spacing: -0.02em; }
+
+        .form-group { margin-bottom: 1.5rem; }
+        .form-group label { display: block; margin-bottom: 8px; font-size: 0.95rem; font-weight: 500; color: var(--text-secondary); }
+        .form-control { 
+            width: 100%; padding: 1rem 1.2rem; border-radius: 12px; 
+            border: 1px solid var(--surface-border); background: var(--surface-color); 
+            color: var(--text-primary); font-size: 1rem; font-family: inherit; outline: none; transition: all 0.2s; box-sizing: border-box;
+        }
+        .form-control:focus { border-color: var(--primary-color); background: #fff; box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.1); }
+
+        .nav-buttons { display: flex; justify-content: space-between; margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid var(--surface-border); }
+
+        .plan-card { 
+            border: 1px solid var(--surface-border); border-radius: 16px; 
+            padding: 1.5rem; cursor: pointer; transition: all 0.2s; 
+            text-align: center; background: var(--surface-color-light); 
+        }
+        .plan-card.selected { border-color: var(--primary-color); background: rgba(234, 88, 12, 0.05); box-shadow: 0 4px 15px rgba(234, 88, 12, 0.1); }
+        .plan-price { font-size: 2rem; font-weight: 800; color: var(--text-primary); margin: 0.5rem 0; font-family: 'Outfit', sans-serif;}
+
+        .agent-toggle { 
+            padding: 1rem; border: 1px solid var(--surface-border); 
+            border-radius: 14px; cursor: pointer; display: flex; align-items: center; gap: 12px; 
+            transition: all 0.2s; background: var(--surface-color-light); margin-bottom: 0.8rem; 
+        }
+        .agent-toggle.active { border-color: var(--primary-color); background: rgba(234, 88, 12, 0.05); }
+        .agent-toggle .icon-box { 
+            width: 42px; height: 42px; border-radius: 10px; background: var(--surface-color); border: 1px solid var(--surface-border);
+            display: flex; align-items: center; justify-content: center; font-size: 1.3rem; color: var(--text-primary); transition: all 0.2s;
+        }
+        .agent-toggle.active .icon-box { background: var(--primary-color); border-color: var(--primary-color); color: #fff; }
+        
+        .btn-primary { background: var(--primary-color); color: #fff; padding: 0.8rem 2rem; font-weight: 700; border-radius: 99px; cursor: pointer; border: none; font-size: 1rem; transition: all 0.2s; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(234, 88, 12, 0.3); }
+        .btn-outline { background: transparent; color: var(--text-primary); border: 1px solid var(--surface-border); padding: 0.8rem 2rem; border-radius: 99px; cursor: pointer; font-size: 1rem; transition: all 0.2s; }
+        .btn-outline:hover { background: var(--surface-color-light); }
+
+        .success-circle {
+            width: 80px; height: 80px; border-radius: 50%; background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981;
+            display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; font-size: 2.5rem; color: #10b981;
+        }
+
+        /* ─── Validation ─── */
+        .field-error {
+            font-size: 0.82rem;
+            color: #ef4444;
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            min-height: 18px;
+            opacity: 0;
+            transform: translateY(-4px);
+            transition: opacity 0.2s, transform 0.2s;
+        }
+        .field-error.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .form-control.invalid {
+            border-color: #ef4444 !important;
+            background: rgba(239, 68, 68, 0.04);
+        }
+        .form-control.valid {
+            border-color: #10b981 !important;
+        }
+        /* inline agent-limit warning */
+        #agent-limit-msg {
+            display: none;
+            background: rgba(239,68,68,0.08);
+            border: 1px solid rgba(239,68,68,0.3);
+            color: #ef4444;
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 0.88rem;
+            margin-top: 12px;
+            align-items: center;
+            gap: 8px;
+        }
+        #agent-limit-msg.show { display: flex; }
+    </style>
+</head>
+<body>
+    <div class="noise-overlay"></div>
+    <div class="orb-1"></div>
+    <div class="orb-2"></div>
+
+    <div class="header-logo">
+        <a href="index.html"><img src="assets/onstaff_logo.png" alt="OnStaffAI"></a>
+    </div>
+
+    <div class="wizard-container">
+        <div class="step-indicator" id="step-indicator">
+            <!-- Filled by JS -->
+        </div>
+
+        <div id="steps-container">
+            <!-- Step 1: Company -->
+            <div class="step-content active" id="step-1">
+                <h2>פרטי החברה</h2>
+                <div class="form-group">
+                    <label>שם החברה *</label>
+                    <input type="text" id="ob-company" class="form-control" placeholder="לדוגמה: חברה בע&quot;מ">
+                    <div class="field-error" id="err-company"><i class="ph ph-warning-circle"></i><span></span></div>
+                </div>
+                <div class="form-group">
+                    <label>מספר חברה / ח.פ.</label>
+                    <input type="text" id="ob-company-num" class="form-control" placeholder="51-xxxxxxx-x">
+                </div>
+                <div class="form-group">
+                    <label>אתר אינטרנט</label>
+                    <input type="url" id="ob-website" class="form-control" placeholder="https://">
+                </div>
+            </div>
+
+            <!-- Step 2: Contact -->
+            <div class="step-content" id="step-2">
+                <h2>איש קשר ראשי</h2>
+                <div class="form-group">
+                    <label>שם מלא *</label>
+                    <input type="text" id="ob-name" class="form-control" placeholder="ישראל ישראלי">
+                    <div class="field-error" id="err-name"><i class="ph ph-warning-circle"></i><span></span></div>
+                </div>
+                <div class="form-group">
+                    <label>אימייל *</label>
+                    <input type="email" id="ob-email" class="form-control" placeholder="info@example.com">
+                    <div class="field-error" id="err-email"><i class="ph ph-warning-circle"></i><span></span></div>
+                </div>
+                <div class="form-group">
+                    <label>טלפון *</label>
+                    <input type="tel" id="ob-phone" class="form-control" placeholder="05x-xxxxxxx">
+                    <div class="field-error" id="err-phone"><i class="ph ph-warning-circle"></i><span></span></div>
+                </div>
+            </div>
+
+            <!-- Step 3: Plan -->
+            <div class="step-content" id="step-3">
+                <h2>בחירת תוכנית</h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;">
+                    <div class="plan-card" onclick="selectPlan('lite')" id="plan-lite">
+                        <h3 style="color:var(--text-primary);margin-bottom:4px;font-weight:700;">Lite</h3>
+                        <div class="plan-price">₪190</div>
+                        <p style="font-size: 0.9rem; color: var(--text-secondary);">סוכן אחד (1)</p>
+                    </div>
+                    <div class="plan-card" onclick="selectPlan('starter')" id="plan-starter">
+                        <h3 style="color:var(--text-primary);margin-bottom:4px;font-weight:700;">Starter</h3>
+                        <div class="plan-price">₪490</div>
+                        <p style="font-size: 0.9rem; color: var(--text-secondary);">עד 3 סוכנים</p>
+                    </div>
+                    <div class="plan-card selected" onclick="selectPlan('growth')" id="plan-growth">
+                        <h3 style="color:var(--text-primary);margin-bottom:4px;font-weight:700;">Growth</h3>
+                        <div class="plan-price">₪990</div>
+                        <p style="font-size: 0.9rem; color: var(--text-secondary);">עד 6 סוכנים</p>
+                    </div>
+                    <div class="plan-card" onclick="selectPlan('business')" id="plan-business">
+                        <h3 style="color:var(--text-primary);margin-bottom:4px;font-weight:700;">Business</h3>
+                        <div class="plan-price">₪1990</div>
+                        <p style="font-size: 0.9rem; color: var(--text-secondary);">עד 10 סוכנים</p>
+                    </div>
+                </div>
+                <input type="hidden" id="ob-plan" value="growth">
+            </div>
+
+            <!-- Step 4: Agents -->
+            <div class="step-content" id="step-4">
+                <h2>אילו סוכנים להפעיל?</h2>
+                <p style="margin-bottom: 1.5rem; color: var(--text-secondary);">בחרנו עבורך סוכנים מומלצים, ניתן לערוך בחירה זו תמיד.</p>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;" id="ob-agents-container"></div>
+                <div id="agent-limit-msg"><i class="ph ph-warning"></i><span></span></div>
+            </div>
+
+            <!-- Step 5: Payment Placeholder -->
+            <div class="step-content" id="step-5">
+                <h2>אמצעי תשלום</h2>
+                <p style="margin-bottom: 2rem; color: var(--text-secondary);">כדי להשלים את ההתקנה, יש להזין אמצעי תשלום. לא נחייב אותך עד סיום תקופת הניסיון (14 ימים).</p>
+                
+                <div style="background: rgba(0,0,0,0.3); border: 1px dashed var(--surface-border); border-radius: 16px; padding: 3rem 2rem; text-align: center;">
+                    <i class="ph ph-credit-card" style="font-size: 3.5rem; color: var(--text-secondary); margin-bottom: 1rem;"></i>
+                    <p style="font-weight: 500; color: var(--text-secondary);">(כאן תשולב מערכת סליקה מאובטחת - Stripe / משולם)</p>
+                </div>
+            </div>
+            
+            <!-- Step 6: Done -->
+            <div class="step-content" id="step-6" style="text-align: center; padding: 4rem 0;">
+                <div class="success-circle">
+                    <i class="ph ph-check-bold"></i>
+                </div>
+                <h2 style="font-size: 2.2rem;">הכל מוכן! סוכני ה-AI בדרך.</h2>
+                <p style="color: var(--text-secondary); margin-bottom: 2.5rem; font-size: 1.1rem; max-width: 400px; margin-inline: auto;">פרטי ההתחברות לפורטל נשלחו לכתובת המייל שלך.</p>
+                <a href="client_portal.html" class="btn btn-primary">היכנס לפורטל הניהול</a>
+            </div>
+        </div>
+
+        <div class="nav-buttons" id="nav-buttons">
+            <button class="btn btn-outline" id="btn-prev" onclick="prevStep()" style="visibility: hidden;">חזור</button>
+            <button class="btn btn-primary" id="btn-next" onclick="nextStep()">המשך לשלב הבא</button>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+        import { getFirestore, doc, updateDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBExample-ReplaceWithYourKey",
+            authDomain: "onstaffai.firebaseapp.com",
+            projectId: "onstaffai"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        window._db = db;
+        window._updateDoc = updateDoc;
+        window._doc = doc;
+        window._serverTimestamp = serverTimestamp;
+    </script>
+
+    <!-- EmailJS -->
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    
+    <script>
+        const EMAILJS_PUBLIC_KEY  = '7IoARO-EcljLAzrok';
+        const EMAILJS_SERVICE_ID  = 'service_ne5z4wv';
+        const EMAILJS_TEMPLATE_STEP = 'template_sl4n308'; // Template for step completion
+
+        if (EMAILJS_PUBLIC_KEY !== 'YOUR_PUBLIC_KEY') {
+            emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+        }
+
+        const TOTAL_STEPS = 5;
+        let currentStep = 1;
+        let leadId = null;
+
+        const STEPS_DATA = [
+            { num: 1, id: 'company', label: 'פרטי חברה', icon: 'ph-buildings' },
+            { num: 2, id: 'contact', label: 'איש קשר', icon: 'ph-user' },
+            { num: 3, id: 'plan', label: 'תוכנית', icon: 'ph-star' },
+            { num: 4, id: 'agents', label: 'סוכנים', icon: 'ph-robot' },
+            { num: 5, id: 'payment', label: 'תשלום', icon: 'ph-credit-card' }
+        ];
+
+        const AGENT_TYPES = [
+            { id: 'customer-service', label: 'שירות לקוחות', icon: 'ph-headphones' },
+            { id: 'tech-support', label: 'תמיכה טכנית', icon: 'ph-wrench' },
+            { id: 'marketing', label: 'שיווק ומכירות', icon: 'ph-megaphone' },
+            { id: 'finance', label: 'כספים', icon: 'ph-currency-dollar' },
+            { id: 'operations', label: 'תפעול', icon: 'ph-cube' },
+            { id: 'onboarding', label: 'מלווה לקוחות', icon: 'ph-rocket-launch' },
+            { id: 'hr', label: 'HR וגיוס', icon: 'ph-users-three' },
+            { id: 'pm', label: 'מנהל פרויקטים', icon: 'ph-kanban' }
+        ];
+
+        function init() {
+            // Render agents toggle
+            const agc = document.getElementById('ob-agents-container');
+            agc.innerHTML = AGENT_TYPES.map(a => `
+                <div class="agent-toggle" id="ag-tog-${a.id}" onclick="toggleAgent('${a.id}')">
+                    <div class="icon-box"><i class="ph ${a.icon}"></i></div>
+                    <span style="font-weight:600; font-size:1.05rem; color:var(--text-primary); flex:1;">${a.label}</span>
+                    <div id="ag-chk-${a.id}" style="width:22px;height:22px;border-radius:6px;border:1.5px solid var(--surface-border);display:flex;align-items:center;justify-content:center;transition:all 0.2s;"></div>
+                </div>
+            `).join('');
+
+            // Parse URL params to prefill
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('company')) document.getElementById('ob-company').value = params.get('company');
+            if (params.get('name')) document.getElementById('ob-name').value = params.get('name');
+            if (params.get('email')) document.getElementById('ob-email').value = params.get('email');
+            if (params.get('phone')) document.getElementById('ob-phone').value = params.get('phone');
+            if (params.get('lid')) leadId = params.get('lid');
+            
+            // Prefill selected agents
+            const selectedAgents = params.get('agents') ? params.get('agents').split(',') : ['customer-service'];
+            selectedAgents.forEach(aid => {
+                if(aid && document.getElementById(`ag-tog-${aid}`)) toggleAgent(aid);
+            });
+            
+            // Prefill selected plan
+            const pPlan = params.get('plan');
+            if(pPlan) {
+                const planKey = pPlan.toLowerCase();
+                if(['lite','starter','growth','business'].includes(planKey)) selectPlan(planKey);
+            }
+
+            updateUI();
+        }
+
+        function toggleAgent(id) {
+            const el = document.getElementById(`ag-tog-${id}`);
+            const chk = document.getElementById(`ag-chk-${id}`);
+            
+            if (!el.classList.contains('active')) {
+                const plan = document.getElementById('ob-plan').value;
+                const limits = { lite:1, starter:3, growth:6, business:10 };
+                const limit = limits[plan] || 3;
+                const activeCount = document.querySelectorAll('.agent-toggle.active').length;
+                
+                if (activeCount >= limit) {
+                    const msg = document.getElementById('agent-limit-msg');
+                    if (msg) {
+                        msg.querySelector('span').textContent = `בתוכנית ${plan} ניתן לבחור עד ${limit} סוכנים בלבד.`;
+                        msg.classList.add('show');
+                        setTimeout(() => msg.classList.remove('show'), 3500);
+                    }
+                    return;
+                }
+            }
+
+            el.classList.toggle('active');
+            if (el.classList.contains('active')) {
+                chk.innerHTML = '<i class="ph ph-check" style="color:#fff;font-weight:bold;font-size:14px;"></i>';
+                chk.style.borderColor = 'var(--primary-color)';
+                chk.style.background = 'var(--primary-color)';
+            } else {
+                chk.innerHTML = '';
+                chk.style.borderColor = 'var(--surface-border)';
+                chk.style.background = 'transparent';
+            }
+        }
+
+        window.selectPlan = function(plan) {
+            document.querySelectorAll('.plan-card').forEach(el => el.classList.remove('selected'));
+            document.getElementById(`plan-${plan}`).classList.add('selected');
+            document.getElementById('ob-plan').value = plan;
+            
+            // Re-evaluate limits
+            const limits = { lite:1, starter:3, growth:6, business:10 };
+            const limit = limits[plan] || 3;
+            const activeAgents = Array.from(document.querySelectorAll('.agent-toggle.active'));
+            if (activeAgents.length > limit) {
+                // Clear all to let them pick again
+                activeAgents.forEach(el => {
+                    const id = el.id.replace('ag-tog-','');
+                    const chk = document.getElementById(`ag-chk-${id}`);
+                    el.classList.remove('active');
+                    chk.innerHTML = '';
+                    chk.style.borderColor = 'var(--surface-border)';
+                    chk.style.background = 'transparent';
+                });
+            }
+        }
+
+        // ─── Validation helpers ───
+        function showFieldError(fieldId, errId, msg) {
+            const field = document.getElementById(fieldId);
+            const err   = document.getElementById(errId);
+            if (!field || !err) return;
+            field.classList.add('invalid');
+            field.classList.remove('valid');
+            err.querySelector('span').textContent = msg;
+            err.classList.add('show');
+        }
+        function clearFieldError(fieldId, errId) {
+            const field = document.getElementById(fieldId);
+            const err   = document.getElementById(errId);
+            if (!field || !err) return;
+            field.classList.remove('invalid');
+            field.classList.add('valid');
+            err.classList.remove('show');
+        }
+        function clearAllErrors() {
+            document.querySelectorAll('.form-control').forEach(f => { f.classList.remove('invalid','valid'); });
+            document.querySelectorAll('.field-error').forEach(e => e.classList.remove('show'));
+        }
+
+        function validateStep() {
+            clearAllErrors();
+            let valid = true;
+
+            if (currentStep === 1) {
+                const company = document.getElementById('ob-company').value.trim();
+                if (!company) {
+                    showFieldError('ob-company', 'err-company', 'שדה חובה — יש להזין שם חברה');
+                    valid = false;
+                }
+            }
+
+            if (currentStep === 2) {
+                const name  = document.getElementById('ob-name').value.trim();
+                const email = document.getElementById('ob-email').value.trim();
+                const phone = document.getElementById('ob-phone').value.trim();
+                const emailRx = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                const phoneRx = /^0(5[0-9]|[2-9]\d)[\s\-]?\d{3}[\s\-]?\d{4}$/;
+
+                if (!name) {
+                    showFieldError('ob-name', 'err-name', 'שדה חובה — יש להזין שם מלא');
+                    valid = false;
+                }
+                if (!email) {
+                    showFieldError('ob-email', 'err-email', 'שדה חובה — יש להזין כתובת מייל');
+                    valid = false;
+                } else if (!emailRx.test(email)) {
+                    showFieldError('ob-email', 'err-email', 'כתובת מייל לא תקינה — לדוגמא: name@company.com');
+                    valid = false;
+                }
+                if (!phone) {
+                    showFieldError('ob-phone', 'err-phone', 'שדה חובה — יש להזין מספר טלפון');
+                    valid = false;
+                } else if (!phoneRx.test(phone)) {
+                    showFieldError('ob-phone', 'err-phone', 'מספר טלפון לא תקין — יש להזין מספר ישראלי (לדוגמא: 052-1234567)');
+                    valid = false;
+                }
+            }
+
+            return valid;
+        }
+
+        window.nextStep = async function() {
+            if (!validateStep()) return;
+            
+            const btn = document.getElementById('btn-next');
+            btn.disabled = true;
+            btn.textContent = 'מעדכן...';
+
+            // Sync with Firebase & Send Email
+            if (leadId && window._db && window._updateDoc && window._doc) {
+                try {
+                    const docRef = window._doc(window._db, 'leads', leadId);
+                    await window._updateDoc(docRef, {
+                        step: currentStep + 1,
+                        lastActivity: window._serverTimestamp ? window._serverTimestamp() : new Date().toISOString()
+                    });
+                    
+                    // Send step completion email via EmailJS
+                    if (EMAILJS_PUBLIC_KEY !== 'YOUR_PUBLIC_KEY') {
+                        emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_STEP, {
+                            to_email: document.getElementById('ob-email').value,
+                            to_name: document.getElementById('ob-name').value,
+                            completed_step: currentStep,
+                            next_step: currentStep + 1
+                        });
+                    }
+                } catch(e) {
+                    console.error("Failed to update lead", e);
+                }
+            }
+
+            btn.disabled = false;
+            
+            if (currentStep === TOTAL_STEPS) {
+                finishOnboarding();
+            } else {
+                currentStep++;
+                updateUI();
+            }
+        }
+
+        window.prevStep = function() {
+            if (currentStep > 1) {
+                currentStep--;
+                updateUI();
+            }
+        }
+
+        function updateUI() {
+            // Update steps visibility
+            for (let i = 1; i <= 6; i++) {
+                const el = document.getElementById(`step-${i}`);
+                if(el) {
+                    if (i === currentStep) el.classList.add('active');
+                    else el.classList.remove('active');
+                }
+            }
+            
+            // Update buttons
+            const btnPrev = document.getElementById('btn-prev');
+            const btnNext = document.getElementById('btn-next');
+            
+            if (currentStep === 1) btnPrev.style.visibility = 'hidden';
+            else btnPrev.style.visibility = 'visible';
+            
+            if (currentStep === TOTAL_STEPS) {
+                btnNext.textContent = 'סיום והפעלת סוכנים';
+                btnNext.style.background = '#10b981';
+                btnNext.style.color = '#fff';
+            } else {
+                btnNext.textContent = 'המשך לשלב הבא';
+                btnNext.style.background = '#ea580c';
+                btnNext.style.color = '#fff';
+            }
+
+            // Update indicator tabs
+            const ind = document.getElementById('step-indicator');
+            ind.innerHTML = STEPS_DATA.map((s, i) => `
+                <div class="modal-tab ${currentStep === s.num ? 'active' : ''} ${currentStep > s.num ? 'done' : ''}">
+                    <i class="ph ${s.icon}"></i> ${s.label}
+                </div>
+            `).join('');
+        }
+        
+        function finishOnboarding() {
+            document.getElementById('nav-buttons').style.display = 'none';
+            document.getElementById('step-indicator').style.display = 'none';
+            
+            // Show step 6 (Done)
+            for (let i = 1; i <= 5; i++) {
+                document.getElementById(`step-${i}`).classList.remove('active');
+            }
+            document.getElementById('step-6').classList.add('active');
+        }
+
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+    <!-- Chat Widget -->
+    <div id="chat-widget-container" style="position:fixed; bottom:24px; left:24px; z-index:9999; display:flex; flex-direction:column; align-items:flex-start;">
+        <!-- Iframe container (hidden by default) -->
+        <div id="chat-iframe-box" style="display:none; width:360px; height:600px; max-height:calc(100vh - 100px); max-width:calc(100vw - 48px); background:#f5f0eb; border:1px solid var(--surface-border); border-radius:16px; overflow:hidden; box-shadow:0 10px 40px rgba(0,0,0,0.5); margin-bottom:12px; position:relative; animation: fadeIn 0.3s ease;">
+            <!-- Floating close button overlaid on iframe -->
+            <button onclick="toggleChat()" style="position:absolute; top:12px; left:12px; z-index:10; background:rgba(0,0,0,0.2); color:#fff; border:none; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; cursor:pointer;"><i class="ph ph-x"></i></button>
+            <iframe id="chat-iframe" src="" style="width:100%; height:100%; border:none; background:#f5f0eb;"></iframe>
+        </div>
+
+        <!-- Floating Button -->
+        <button id="chat-toggle-btn" onclick="toggleChat()" style="background:var(--accent-primary); color:#fff; border:none; border-radius:50px; padding:8px 20px 8px 8px; display:flex; align-items:center; gap:10px; font-weight:700; cursor:pointer; box-shadow:0 4px 15px rgba(234,88,12,0.4); font-family:inherit; font-size:15px; transition:transform 0.2s;" onMouseOver="this.style.transform='scale(1.05)'" onMouseOut="this.style.transform='scale(1)'">
+            <span style="padding-right: 12px;">צריכים עזרה באשף?</span>
+            <img src="https://onstaffai.web.app/avatars/maya.png" alt="Liad" style="width:36px; height:36px; border-radius:50%; object-fit:cover; border:2px solid #fff;">
+        </button>
+    </div>
+
+    <script>
+        let chatLoaded = false;
+        function toggleChat() {
+            const box = document.getElementById('chat-iframe-box');
+            const iframe = document.getElementById('chat-iframe');
+            
+            if (box.style.display === 'none') {
+                if (!chatLoaded) {
+                    const email = document.getElementById('ob-email').value || '';
+                    iframe.src = 'chat.html?agent=onboarding&clientEmail=' + encodeURIComponent(email);
+                    chatLoaded = true;
+                }
+                box.style.display = 'block';
+            } else {
+                box.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
