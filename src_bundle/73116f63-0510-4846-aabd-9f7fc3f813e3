@@ -160,7 +160,7 @@ const Pricing = ({ head, plans, ctaLabel }) => (
             </div>
             <div className="price">{p.price}<span className="unit">{p.unit}</span></div>
             <ul>{p.feats.map((f, j) => <li key={j}>{f}</li>)}</ul>
-            <a className={"btn " + (p.featured ? "btn-accent" : "btn-primary")} style={{ width: "100%", justifyContent: "center", marginTop: "auto" }}>{p.cta}</a>
+            <a href="#contact" className={"btn " + (p.featured ? "btn-accent" : "btn-primary")} style={{ width: "100%", justifyContent: "center", marginTop: "auto" }}>{p.cta}</a>
           </div>
         ))}
       </div>
@@ -203,7 +203,7 @@ const CTABanner = ({ t }) => (
         <div className="cta-shape" style={{ bottom: -80, insetInlineEnd: -80 }}/>
         <h2>{t.h}</h2>
         <p>{t.p}</p>
-        <a className="btn btn-accent">{t.btn} →</a>
+        <a href="#contact" className="btn btn-accent">{t.btn} →</a>
       </div>
     </div>
   </section>
