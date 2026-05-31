@@ -670,8 +670,8 @@
                 if (account.forcePasswordChange) {
                     showForcePasswordChangeScreen();
                 } else {
-                    // Init portal
-                    if (typeof initLiveChats === 'function' && !_lcInited) initLiveChats();
+                    // Reload to fully initialize portal and trigger analytics
+                    window.location.reload();
                 }
             } else {
                 throw new Error('קוד שגוי');
@@ -725,7 +725,7 @@
             }
             
             document.getElementById('client-force-pwd-screen').style.display = 'none';
-            if (typeof initLiveChats === 'function' && !_lcInited) initLiveChats();
+            window.location.reload();
         } catch(e) {
             errEl.textContent = 'שגיאה בשמירת סיסמא: ' + e.message;
             errEl.style.display = 'block';
@@ -1096,7 +1096,16 @@
             const section = document.getElementById(tabId);
             if (section) section.classList.add('active');
             document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
-            if (el) el.classList.add('active');
+            if (el) {
+                el.classList.add('active');
+            } else {
+                // Find by onclick match
+                document.querySelectorAll('.nav-item').forEach(nav => {
+                    if (nav.getAttribute('onclick') && nav.getAttribute('onclick').includes("'" + tabId + "'")) {
+                        nav.classList.add('active');
+                    }
+                });
+            }
             if (tabId === 'live-chats') initLiveChats();
         }
 
@@ -1795,6 +1804,20 @@
         const originalSwitchTab = switchTab;
         window.switchTab = function(tabId, el) {
             originalSwitchTab(tabId, el);
+            
+            // Update URL search parameters without page reload
+            const url = new URL(window.location);
+            url.searchParams.set('tab', tabId);
+            window.history.pushState({}, '', url);
+
+            // Track virtual page view in Google Analytics
+            if (typeof gtag === 'function') {
+                gtag('config', 'G-H73PEQ49ZT', {
+                    page_title: 'ClientPortal - ' + tabId,
+                    page_path: window.location.pathname + window.location.search
+                });
+            }
+
             if(tabId === 'knowledge') loadGlobalKnowledge();
             if(tabId === 'dashboard') loadDashboardData();
             if(tabId === 'chat-history') loadClientChatHistory();
@@ -1973,7 +1996,23 @@
 
         window.addEventListener('load', () => {
             if (document.getElementById('client-login-screen').style.display === 'none') {
-                loadDashboardData();
+                // Check if tab parameter is specified in the URL
+                const urlParams = new URLSearchParams(window.location.search);
+                const tabParam = urlParams.get('tab');
+                if (tabParam) {
+                    if (typeof window.switchTab === 'function') {
+                        window.switchTab(tabParam, null);
+                    }
+                } else {
+                    loadDashboardData();
+                    // Track default page view on load
+                    if (typeof gtag === 'function') {
+                        gtag('config', 'G-H73PEQ49ZT', {
+                            page_title: 'ClientPortal - dashboard',
+                            page_path: window.location.pathname + window.location.search
+                        });
+                    }
+                }
                 initLiveChats();
             }
         });

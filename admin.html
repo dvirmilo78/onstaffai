@@ -1796,6 +1796,19 @@
                 });
             }
 
+            // Update URL search parameters without page reload
+            const url = new URL(window.location);
+            url.searchParams.set('tab', tabId);
+            window.history.pushState({}, '', url);
+
+            // Track virtual page view in Google Analytics
+            if (typeof gtag === 'function') {
+                gtag('config', 'G-H73PEQ49ZT', {
+                    page_title: 'Admin - ' + tabId,
+                    page_path: window.location.pathname + window.location.search
+                });
+            }
+
             if (tabId === 'leads') loadLeads();
             if (tabId === 'clients') renderClientsTable();
             if (tabId === 'analytics') loadAnalytics();
@@ -3237,6 +3250,21 @@
             loadAllData();        // localStorage fallback
             renderClientsTable();
             initFirestore();      // load from Firestore (overrides localStorage)
+
+            // Check if tab parameter is specified in the URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const tabParam = urlParams.get('tab');
+            if (tabParam) {
+                switchTab(tabParam, null);
+            } else {
+                // Track default page view on load
+                if (typeof gtag === 'function') {
+                    gtag('config', 'G-H73PEQ49ZT', {
+                        page_title: 'Admin - dashboard',
+                        page_path: window.location.pathname + window.location.search
+                    });
+                }
+            }
         });
 
 
