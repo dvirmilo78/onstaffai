@@ -42,68 +42,67 @@ const LiveDemo = ({ head, agents, scripts, lang, ctaLabel }) => {
       let reply = "";
       const isHe = lang === "he";
       
-      if (q.includes("מחיר") || q.includes("עולה") || q.includes("כסף") || q.includes("price") || q.includes("cost")) {
-        reply = isHe ? "העלות שלי היא שבריר מעלות של עובד אנושי ממוצע, וההחזר על ההשקעה (ROI) בדרך כלל מכסה את עצמו כבר בחודש הראשון. אפשר לראות פירוט במחירון שלנו." : "I cost a fraction of a human employee, and the ROI usually covers the cost in the first month. Check our pricing section.";
-      } else if (q.includes("אינטגרציה") || q.includes("מערכות") || q.includes("חיבור") || q.includes("integrate") || q.includes("system")) {
-        reply = isHe ? "אני מתחבר בקלות לכל המערכות שאתה כבר עובד איתן - WhatsApp, יומן גוגל, CRM, מערכות סליקה ועוד. ההטמעה לוקחת דקות." : "I integrate seamlessly with your existing tools - WhatsApp, Google Calendar, CRM, billing, and more. Setup takes minutes.";
-      } else if (q.includes("שעות") || q.includes("זמינות") || q.includes("hours") || q.includes("available")) {
-        reply = isHe ? "אני עובד 24/7, בלי הפסקות צהריים, בלי ימי מחלה או חופשות. תמיד כאן כשהלקוחות שלך צריכים אותי." : "I work 24/7, with no lunch breaks, sick days, or vacations. Always here when your customers need me.";
+      // AI Logic Simulation
+      if (q.includes("שלום") || q.includes("היי") || q.includes("אהלן") || q.includes("hi") || q.includes("hello")) {
+          reply = isHe ? "שלום! איך אפשר לעזור לך היום? 😊" : "Hello! How can I help you today? 😊";
+      } else if (q.includes("מה קורה") || q.includes("מה נשמע") || q.includes("מה המצב") || q.includes("how are you")) {
+          reply = isHe ? "הכל מצוין, תודה! אני כאן לעזור. במה אוכל לסייע?" : "Everything is great, thanks! How can I assist you?";
+      } else if (q.includes("מחיר") || q.includes("עולה") || q.includes("כסף") || q.includes("תמחור") || q.includes("price") || q.includes("cost")) {
+        reply = isHe ? "העלות שלי היא שבריר מעלות של עובד אנושי ממוצע, וההחזר על ההשקעה (ROI) בדרך כלל מכסה את עצמו כבר בחודש הראשון! אפשר לראות פירוט בעמוד המחירון שלנו. 💸" : "I cost a fraction of a human employee, and the ROI usually covers the cost in the first month. Check our pricing section. 💸";
+      } else if (q.includes("אינטגרציה") || q.includes("מערכות") || q.includes("חיבור") || q.includes("להתחבר") || q.includes("integrate") || q.includes("system")) {
+        reply = isHe ? "אני מתחבר בקלות לכל המערכות שאתה כבר עובד איתן - WhatsApp, יומן גוגל, CRM (כמו Salesforce, HubSpot), מערכות סליקה, ועוד הרבה. ההטמעה לוקחת דקות בודדות! 🔌" : "I integrate seamlessly with your existing tools - WhatsApp, Google Calendar, CRM, billing, and more. Setup takes minutes. 🔌";
+      } else if (q.includes("שעות") || q.includes("זמינות") || q.includes("מתי") || q.includes("hours") || q.includes("available")) {
+        reply = isHe ? "אני עובד 24/7, בלי הפסקות צהריים, בלי ימי מחלה או חופשות. תמיד זמין לענות בשניות כשהלקוחות שלך צריכים אותי! ⏰" : "I work 24/7, with no lunch breaks, sick days, or vacations. Always here when your customers need me! ⏰";
+      } else if (q.includes("מי אתה") || q.includes("מה אתה") || q.includes("רובוט") || q.includes("בוט") || q.includes("bot") || q.includes("who are you")) {
+          reply = isHe ? "אני סוכן AI חכם שנבנה על הפלטפורמה של OnStaff AI. אני לומד את העסק שלך ויודע לבצע משימות מורכבות בצורה אוטומטית לחלוטין 🤖" : "I'm a smart AI agent built on OnStaff AI. I learn your business and automate complex tasks seamlessly 🤖";
+      } else if (q.includes("איך זה עובד") || q.includes("איך המערכת") || q.includes("ללמוד") || q.includes("how it works")) {
+          reply = isHe ? "זה פשוט מאוד: מעלים מסמכים או קישור לאתר שלך - ואני קורא ומבין הכל בתוך דקות. מאותו רגע אני יכול לענות לכל שאלה בצורה מדויקת על סמך הידע הזה! 🧠" : "It's simple: just upload documents or a website link, and I learn everything in minutes. I can then answer accurately based on that knowledge! 🧠";
+      } else if (q.includes("אנושי") || q.includes("בן אדם") || q.includes("נציג") || q.includes("human")) {
+          reply = isHe ? "למרות שאני בינה מלאכותית, אני יודע לזהות מתי צריך נציג אנושי, ובמידת הצורך אעביר את השיחה בצורה חלקה לצוות האנושי שלכם." : "While I am an AI, I know when human intervention is needed and can seamlessly route the chat to your human team.";
       } else {
+        // Agent specific fallback logic
         if (activeK === "reception") {
-            if (q.includes("לקוחות") || q.includes("פגישות") || q.includes("לקבוע")) {
-                reply = isHe ? "אני מנהלת את כל הפניות הראשוניות בווטסאפ או באתר, מסננת שאלות נפוצות (כמו שעות פתיחה או מחירים), וקובעת פגישות ללקוחות רציניים ישירות ביומן שלך בלי שתצטרך להתערב." : "I handle initial inquiries on WhatsApp or website, answer FAQs, and book meetings directly into your calendar for qualified leads.";
-            } else if (q.includes("לעזור") || q.includes("תמיכה") || q.includes("שירות")) {
-                reply = isHe ? "אני מחליפה את מענה הווטסאפ/טלפון השוטף שלך: עונה לשאלות מלאי, משנה מועדי פגישות, מטפלת בתלונות בסיסיות, ורק כשזה מצריך התערבות אנושית אני מעבירה את השיחה אליך עם סיכום הבעיה." : "I replace your basic customer service line. I answer stock questions, reschedule meetings, handle basic complaints, and only escalate to a human when strictly necessary.";
+            if (q.includes("לקוחות") || q.includes("פגישות") || q.includes("לקבוע") || q.includes("יומן") || q.includes("פגישה")) {
+                reply = isHe ? "כמנהלת משרד אני מסננת לקוחות לא רלוונטיים, עונה לשאלות, וקובעת פגישות חכמות ישירות ביומן Google/Outlook של הצוות בלי שתצטרכו להתערב. 📅" : "As a receptionist, I filter irrelevant leads, answer questions, and book smart meetings directly into your Google/Outlook calendar. 📅";
+            } else if (q.includes("טלפון") || q.includes("שיחות") || q.includes("מענה")) {
+                reply = isHe ? "אני זמינה בוואטסאפ ובאתר כדי להבטיח שאף ליד או פנייה לא יתפספסו כשהקו עמוס או מחוץ לשעות הפעילות." : "I am available on WhatsApp and web to ensure no lead is missed when lines are busy or out of hours.";
             }
         } else if (activeK === "finance") {
-            if (q.includes("חשבון") || q.includes("גבייה") || q.includes("לשלם") || q.includes("כסף")) {
-                reply = isHe ? "אני עוקב אחרי כל התשלומים במערכת, מפיק חשבוניות אוטומטית כשהכסף נכנס, שולח תזכורות מנומסות וחכמות על חובות פתוחים ואוסף את הכספים דרך קישורי תשלום." : "I track all payments, issue invoices automatically upon receipt, send smart polite reminders for open debts, and collect funds via payment links.";
-            } else {
-                reply = isHe ? "אני איש הכספים שלך - מוודא שהעסק שלך תמיד נשאר רווחי ושכספים לא הולכים לאיבוד בין הלקוחות והספקים." : "I am your finance agent - ensuring your business stays profitable and money never falls through the cracks.";
+            if (q.includes("חשבון") || q.includes("גבייה") || q.includes("לשלם") || q.includes("חשבונית") || q.includes("קבלות")) {
+                reply = isHe ? "אני עוקב אחרי כל התשלומים, שולח תזכורות חכמות ועדינות על חובות פתוחים בוואטסאפ, ומפיק חשבוניות/קבלות אוטומטית. 💳" : "I track all payments, send smart and polite reminders for open debts on WhatsApp, and generate invoices automatically. 💳";
+            } else if (q.includes("רווח") || q.includes("הוצאות") || q.includes("כסף")) {
+                reply = isHe ? "אני יודע לנתח את ההוצאות וההכנסות, ולשלוח לכם דוחות פשוטים שיעזרו לכם לשמור על העסק רווחי." : "I can analyze expenses and revenues, sending you simple reports to help keep the business profitable.";
             }
         } else if (activeK === "marketing") {
-            if (q.includes("רעיונות") || q.includes("קמפיין") || q.includes("שיווק")) {
-                reply = isHe ? "קח כמה רעיונות: 1. סדרת מיילים טיפים ללקוחות עבר כדי להחזיר אותם (אני אכתוב ואשלח). 2. בוט בווטסאפ שמציע שובר הנחה תמורת הפניית חבר. 3. קמפיין מבוסס התנהגות (מי שנטש עגלה יקבל ממני הודעה אישית)." : "Here are some ideas: 1. An automated email tip series for past clients. 2. A WhatsApp bot offering a referral discount. 3. Behavioral campaigns (abandoned cart personalized messages). I can execute all of these.";
-            } else if (q.includes("לידים") || q.includes("מיילים")) {
-                reply = isHe ? "אני לוקחת לידים קרים שמגיעים מהפייסבוק/אינסטגרם ומחממת אותם דרך שיחות ווטסאפ וסדרות אימיילים מותאמות אישית עד שהם מוכנים לסגירה." : "I take cold leads from social media and warm them up via WhatsApp and personalized email sequences until they are ready to close.";
+            if (q.includes("לידים") || q.includes("לקוחות") || q.includes("יחס המרה") || q.includes("מכירות")) {
+                reply = isHe ? "אני לוקחת גולשים מזדמנים והופכת אותם ללקוחות משלמים. אני שואלת שאלות מכוונות, שומרת את הפרטים ב-CRM ומגדילה דרמטית את יחס ההמרה! 📈" : "I turn casual visitors into paying customers. I ask qualifying questions, save details to CRM, and dramatically increase conversion rates! 📈";
+            } else if (q.includes("קמפיין") || q.includes("אימייל") || q.includes("ניוזלטר") || q.includes("sms")) {
+                reply = isHe ? "אני יכולה להריץ סדרות חימום באימייל או בוואטסאפ, להציע מוצרים משלימים (Upsell), ולטפל בעגלות נטושות בצורה אוטומטית." : "I can run warmup sequences via email or WhatsApp, offer upsells, and recover abandoned carts automatically.";
             }
         } else if (activeK === "techsupport") {
-            if (q.includes("בעיה") || q.includes("תקלה") || q.includes("באג")) {
-                reply = isHe ? "אני הראשון לפגוש תקלות. אני יודע לזהות אם זו טעות משתמש ולהדריך אותו עם סרטונים ומדריכים, ואם זה באג אמיתי - אני פותח טיקט מסודר עם כל הלוגים לצוות הפיתוח." : "I'm the first line of defense. I identify user errors and provide tutorials, and if it's a real bug, I open a detailed ticket with logs for the dev team.";
+            if (q.includes("תקלה") || q.includes("באג") || q.includes("בעיה") || q.includes("לא עובד") || q.includes("תיקון")) {
+                reply = isHe ? "אני ניזון ממאגר התמיכה (Knowledge Base). ברגע שלקוח מדווח על תקלה, אני מדריך אותו צעד אחר צעד לפתרון, או פותח טיקט ב-Jira/Zendesk במקרה של בעיית קוד מורכבת. 🛠️" : "I feed off your Knowledge Base. When a client reports an issue, I guide them step-by-step or open a Jira/Zendesk ticket for complex bugs. 🛠️";
+            } else if (q.includes("סיסמא") || q.includes("איפוס") || q.includes("הגדרות")) {
+                reply = isHe ? "אין בעיה! במערכת האמיתית אני מחובר ל-API ויכול לשלוח לינקים לאיפוס סיסמא וניהול משתמשים בצורה מאובטחת." : "No problem! In the real system, I am connected to the API and can send password reset links and manage users securely.";
             }
         } else if (activeK === "inventory") {
-            if (q.includes("מלאי") || q.includes("חסר") || q.includes("ספק")) {
-                reply = isHe ? "אני מחובר למערכת המלאי שלך 24/7. כשאני מזהה שמוצר עומד להיגמר, אני מוציא הזמנת רכש אוטומטית לספק ומתריע לך במייל." : "I monitor your inventory 24/7. When stock runs low, I automatically issue a purchase order to your supplier and alert you.";
+            if (q.includes("מלאי") || q.includes("מוצר") || q.includes("חסר") || q.includes("הזמנה")) {
+                reply = isHe ? "אני סורק את מערכת ניהול המלאי (ERP) בכל רגע. אם מוצר עומד לאזול, אני אוטומטית מכין הצעת הזמנה לספק ומתריע למנהלים. 📦" : "I scan the ERP inventory constantly. If an item is running low, I automatically draft a PO for the supplier and alert managers. 📦";
+            } else if (q.includes("ספקים") || q.includes("משלוח") || q.includes("מעקב")) {
+                reply = isHe ? "אני יכול לעקוב אחרי משלוחים פתוחים, לשלוח מיילים לספקים במידה ויש עיכוב, ולעדכן את הלקוחות בסטטוס ההזמנה שלהם." : "I can track open shipments, email suppliers about delays, and update customers on their order status.";
             }
         }
       }
       
+      // Default fallback
       if (!reply) {
-          if (activeK === "reception") {
-              reply = isHe 
-                ? "מצוין ששאלת. כנציגת שירות, אני מטפלת בדיוק בזה. ביומיום אני עונה לשאלות חוזרות בווטסאפ ובאתר, מתאמת פגישות ישירות ליומן שלך בזמנים פנויים, ומסננת שיחות ספאם - כך שרק לקוחות חמים מגיעים אליך. זה חוסך בממוצע עשרות שעות בחודש."
-                : "Great question! As a reception agent, I handle this daily. I answer FAQs on WhatsApp, book meetings directly into your calendar, and filter out spam so only qualified leads reach you.";
-          } else if (activeK === "finance") {
-              reply = isHe
-                ? "שאלה טובה. בעולמות הכספים, הגישה שלי היא לא להשאיר קצוות פתוחים. אני מבצע התאמות בנקאיות, עוקב אחרי מי לא שילם ושולח תזכורות אוטומטיות עם קישורי תשלום, ומכין את כל הנתונים לרואה החשבון בסוף חודש באופן מדויק."
-                : "Good question. In finance, my goal is to leave no loose ends. I perform bank reconciliations, track unpaid invoices, send smart payment reminders with links, and prepare everything for your CPA accurately.";
-          } else if (activeK === "marketing") {
-              reply = isHe
-                ? "מעולה. בתור מנהלת השיווק שלך, העבודה שלי היא להביא לקוחות. אני מנתחת את הקהל שלך, כותבת ניוזלטרים מותאמים אישית, ובונה אוטומציות בוואטסאפ ללקוחות שנטשו עגלה או שלא קנו הרבה זמן, הכל כדי להגדיל המרות."
-                : "Excellent. As your marketing manager, my job is to drive sales. I analyze your audience, write personalized newsletters, and build WhatsApp automations for abandoned carts to boost your conversions.";
-          } else if (activeK === "techsupport") {
-              reply = isHe
-                ? "בדיוק בשביל זה אני כאן. כשללקוח יש בעיה, אני מנתח את השגיאה, מספק לו פתרון או מדריך מיידי אם זו טעות משתמש, ופותח קריאת שירות (Ticket) מלאה למפתחים רק כשמדובר בבאג אמיתי."
-                : "That's exactly why I'm here. When a user has an issue, I analyze the error, provide instant solutions for user mistakes, and open comprehensive tickets for the dev team only when it's a real bug.";
-          } else if (activeK === "inventory") {
-              reply = isHe
-                ? "שאלה במקום. בכל הקשור למלאי ורכש, אני לא מחכה שדברים יגמרו. אני מזהה מגמות מכירה, מתריע על מוצרים שעומדים לאזול, ואף שולח בקשות רכש אוטומטיות לספקים כדי שתמיד תהיה ערוך."
-                : "Spot on. For inventory, I don't wait for things to run out. I spot sales trends, alert on low stock, and send automated POs to your suppliers so you're always prepared.";
-          }
+         reply = isHe
+          ? `שאלה מעולה! כסוכן ה**${list.find(a=>a.k===activeK)?.name}** (דמו) אני מדגים רק חלק מהיכולות שלי. במערכת האמיתית, עם חיבור למאגר הידע שלכם ולמערכות ה-API, אוכל לתת מענה עשיר ומדויק יותר לשאלה הזאת. ✨`
+          : `Great question! As the **${list.find(a=>a.k===activeK)?.name}** (demo) agent, I'm showcasing a subset of my skills. In the real system, connected to your knowledge base and APIs, I can provide a much richer response to this. ✨`;
       }
       
       setMessages(prev => [...prev, { role: "bot", text: reply }]);
-    }, 1200 + Math.random() * 800);
+    }, 1000 + Math.random() * 800); // realistic typing delay
   };
 
   const render = (txt) => {

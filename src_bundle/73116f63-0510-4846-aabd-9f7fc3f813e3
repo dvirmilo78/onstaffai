@@ -173,6 +173,44 @@ const FAQ = ({ head, faq }) => {
   return (
     <section id="faq">
       <div className="wrap">
+        <a href="#demo" style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 16,
+          padding: "20px 28px",
+          marginBottom: 32,
+          background: "var(--card)",
+          border: "1px solid var(--line)",
+          borderRadius: "var(--r-md)",
+          textDecoration: "none",
+          transition: "transform .2s, box-shadow .2s",
+        }} onMouseOver={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "var(--shadow-md)"; }}
+           onMouseOut={(e) => { e.currentTarget.style.transform = ""; e.currentTarget.style.boxShadow = ""; }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+            <div style={{
+              width: 44, height: 44, borderRadius: "50%",
+              background: "var(--butter)",
+              display: "grid", placeItems: "center",
+              fontWeight: 700, fontSize: 18,
+              color: "var(--ink)",
+              flexShrink: 0,
+            }}>{head.chatAvatar || "מ"}</div>
+            <div>
+              <div style={{ fontWeight: 700, fontSize: 17, color: "var(--ink)" }}>{head.chatLabel || "דבר עם מאיה על השירות שלנו"}</div>
+              <div style={{ fontSize: 14, color: "var(--mute)", marginTop: 2 }}>{head.chatSub || "תשובות מיידיות מעובדת ה-AI שלנו, ישירות בצ׳אט"}</div>
+            </div>
+          </div>
+          <span style={{
+            background: "var(--accent)",
+            color: "var(--accent-ink)",
+            padding: "10px 18px",
+            borderRadius: 999,
+            fontWeight: 600,
+            fontSize: 14,
+            flexShrink: 0,
+          }}>{head.chatBtn || "פתח צ׳אט →"}</span>
+        </a>
         <div className="faq-wrap">
           <div>
             <span className="tag" style={{ fontFamily: "JetBrains Mono", fontSize: 12, color: "var(--mute)", textTransform: "uppercase", letterSpacing: "0.1em" }}>{head.tag}</span>
@@ -195,6 +233,55 @@ const FAQ = ({ head, faq }) => {
   );
 };
 
+const WhoWeAre = ({ t }) => (
+  <section id="who-we-are">
+    <div className="wrap">
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "1fr 1.4fr",
+        gap: 64,
+        alignItems: "start",
+      }} className="wwa-grid">
+        <div>
+          <span style={{
+            fontFamily: "JetBrains Mono, monospace",
+            fontSize: 12,
+            color: "var(--mute)",
+            textTransform: "uppercase",
+            letterSpacing: "0.1em",
+          }}>{t.tag}</span>
+          <h2 style={{
+            fontSize: "clamp(34px, 4.4vw, 56px)",
+            lineHeight: 1.02,
+            letterSpacing: "-0.03em",
+            fontWeight: 800,
+            marginTop: 16,
+          }}>
+            {t.h.map((line, i) => (
+              <React.Fragment key={i}>
+                {i === t.h.length - 1
+                  ? <span className="accent">{line}</span>
+                  : line}
+                {i < t.h.length - 1 && <br/>}
+              </React.Fragment>
+            ))}
+          </h2>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 22, fontSize: 18, lineHeight: 1.6, color: "var(--ink-2)" }}>
+          {t.body.map((para, i) => (
+            <p key={i} style={para.bold ? { fontWeight: 700, color: "var(--ink)", fontSize: 20 } : {}}>{para.text || para}</p>
+          ))}
+        </div>
+      </div>
+      <style>{`
+        @media (max-width: 900px) {
+          .wwa-grid { grid-template-columns: 1fr !important; gap: 24px !important; }
+        }
+      `}</style>
+    </div>
+  </section>
+);
+
 const CTABanner = ({ t }) => (
   <section>
     <div className="wrap">
@@ -215,7 +302,7 @@ const Footer = ({ t }) => (
       <div className="foot-grid">
         <div className="foot-col">
           <div className="brand" style={{ marginBottom: 12 }}>
-            <LogoMark/> OnStaffAI
+            <LogoMark size={22}/>
           </div>
           <p style={{ maxWidth: 280 }}>{t.tagline}</p>
         </div>
@@ -234,4 +321,4 @@ const Footer = ({ t }) => (
   </footer>
 );
 
-Object.assign(window, { MetricStrip, AgentsGrid, HowItWorks, ROI, Testimonials, Pricing, FAQ, CTABanner, Footer, SectionHead });
+Object.assign(window, { MetricStrip, AgentsGrid, HowItWorks, ROI, Testimonials, Pricing, FAQ, WhoWeAre, CTABanner, Footer, SectionHead });

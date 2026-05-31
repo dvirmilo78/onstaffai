@@ -162,7 +162,7 @@ const App = () => {
       `}</style>
       <nav className="nav">
         <div className="wrap nav-inner">
-          <div className="brand"><div style={{display: "flex", alignItems: "center", gap: "clamp(4px, 1.5vw, 10px)"}}><img src="assets/onstaff_icon.png" alt="OnStaffAI Icon" style={{height: "clamp(35px, 8vw, 65px)", width: "auto"}}/><img src="assets/onstaff_text.png" alt="OnStaffAI Text" style={{height: "clamp(24px, 5.5vw, 45px)", width: "auto"}}/></div></div>
+          <div className="brand"><LogoMark size={26}/></div>
           <div className="nav-links">
             <a href="#agents">{L.nav.agents}</a>
             <a href="#how">{L.nav.how}</a>
@@ -172,8 +172,8 @@ const App = () => {
           </div>
           <div className="nav-right desktop-only">
             <div className="lang-toggle">
-              <button className={lang === "he" ? "on" : ""} onClick={() => setLang("he")}>עב</button>
               <button className={lang === "en" ? "on" : ""} onClick={() => setLang("en")}>EN</button>
+              <button className={lang === "he" ? "on" : ""} onClick={() => setLang("he")}>HEB</button>
             </div>
             <a href="#contact" className="btn btn-primary" style={{ padding: "9px 16px", fontSize: 14 }}>{L.cta.primary}</a>
           </div>
@@ -186,7 +186,7 @@ const App = () => {
       {mobileMenuOpen && (
         <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "var(--bg)", zIndex: 10000, display: "flex", flexDirection: "column", padding: "20px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "40px" }}>
-            <div className="brand"><div style={{display: "flex", alignItems: "center", gap: "10px"}}><img src="assets/onstaff_icon.png" style={{height: "45px", width: "auto"}}/><img src="assets/onstaff_text.png" style={{height: "30px", width: "auto"}}/></div></div>
+            <div className="brand"><LogoMark size={26}/></div>
             <button style={{ fontSize: 36, background: "transparent", border: "none", cursor: "pointer", color: "var(--ink)", padding: "0 10px" }} onClick={() => setMobileMenuOpen(false)}>×</button>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "20px", fontSize: "20px", fontWeight: "600", marginBottom: "40px" }}>
@@ -197,8 +197,8 @@ const App = () => {
             <a href="#pricing" style={{color: "var(--ink)"}} onClick={() => setMobileMenuOpen(false)}>{L.nav.pricing}</a>
           </div>
           <div className="lang-toggle" style={{ alignSelf: "flex-start", marginBottom: "20px" }}>
-            <button className={lang === "he" ? "on" : ""} onClick={() => { setLang("he"); setMobileMenuOpen(false); }}>עב</button>
             <button className={lang === "en" ? "on" : ""} onClick={() => { setLang("en"); setMobileMenuOpen(false); }}>EN</button>
+            <button className={lang === "he" ? "on" : ""} onClick={() => { setLang("he"); setMobileMenuOpen(false); }}>HEB</button>
           </div>
           <a href="client_portal.html" style={{ padding: "10px 0", fontSize: 16, color: "var(--mute)", textAlign: "center", marginBottom: "10px", textDecoration: "underline" }} onClick={() => setMobileMenuOpen(false)}>
             {lang === "he" ? "לקוח קיים? כנס לפורטל לקוחות" : "Existing client? Client Portal"}
@@ -216,6 +216,7 @@ const App = () => {
       <Testimonials head={L.quotesHead} quotes={L.quotes}/>
       <Pricing head={L.pricingHead} plans={L.plans}/>
       <FAQ head={L.faqHead} faq={L.faq}/>
+      <WhoWeAre t={L.whoWeAre}/>
       <CTABanner t={L.ctaBanner}/>
       <ContactForm lang={lang}/>
       <Footer t={L.footer}/>
