@@ -5,6 +5,24 @@ const { useState, useEffect } = React;
 const ContactForm = ({ lang }) => {
   const [status, setStatus] = React.useState('idle');
 
+  React.useEffect(() => {
+    const handleContactClick = (e) => {
+      const link = e.target.closest('a[href="#contact"]');
+      if (link) {
+        if (typeof gtag === 'function') {
+          gtag('event', 'click_contact_button', {
+            'event_category': 'engagement',
+            'event_label': link.innerText || link.textContent || 'Contact Link'
+          });
+        }
+      }
+    };
+    document.addEventListener('click', handleContactClick);
+    return () => {
+      document.removeEventListener('click', handleContactClick);
+    };
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setStatus('loading');
@@ -31,6 +49,16 @@ const ContactForm = ({ lang }) => {
       localStorage.setItem('onstaff_leads', JSON.stringify(existingLeads));
 
       setStatus('success');
+      
+      // Track successful contact us form submission in Google Analytics
+      if (typeof gtag === 'function') {
+        gtag('event', 'generate_lead', {
+          'event_category': 'engagement',
+          'event_label': 'Contact Form Submission',
+          'value': 1.0
+        });
+      }
+
       e.target.reset();
     } catch (error) {
       console.error('Error submitting form:', error);
