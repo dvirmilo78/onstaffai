@@ -4,7 +4,7 @@ const { useState, useEffect } = React;
 
 const ContactForm = ({ lang }) => {
   const [status, setStatus] = React.useState('idle');
-  const [selectedPlan, setSelectedPlan] = React.useState('growth');
+  const [selectedPlan, setSelectedPlan] = React.useState('');
   const [selectedAgents, setSelectedAgents] = React.useState([]);
 
   React.useEffect(() => {
@@ -24,10 +24,6 @@ const ContactForm = ({ lang }) => {
       document.removeEventListener('click', handleContactClick);
     };
   }, []);
-
-  const toggleAgent = (agent) => {
-    setSelectedAgents(prev => prev.includes(agent) ? prev.filter(a => a !== agent) : [...prev, agent]);
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -70,32 +66,60 @@ const ContactForm = ({ lang }) => {
       });
       const onboardUrl = window.location.origin + '/onboarding.html?' + params.toString();
 
-      // Send emails via EmailJS
-      if (window.emailjs) {
-        // 1. Send onboarding email to the client
-        await window.emailjs.send('service_ne5z4wv', 'template_sl4n308', {
-          to_email: data.email,
-          to_name: data.fullName,
-          onboard_url: onboardUrl,
-          onboarding_link: onboardUrl
-        }).catch(err => console.error("EmailJS customer email error:", err));
+      // Send emails via EmailJS REST API (using private accessToken for guaranteed delivery)
+      // 1. Send onboarding email to the client
+      await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          service_id: 'service_ne5z4wv',
+          template_id: 'template_sl4n308',
+          user_id: '7IoARO-EcljLAzrok',
+          accessToken: 'qrDC3NWZhEoUpR_zFfFnC',
+          template_params: {
+            to_email: data.email,
+            to_name: data.fullName,
+            onboard_url: onboardUrl,
+            onboarding_link: onboardUrl
+          }
+        })
+      }).catch(err => console.error("EmailJS customer email error:", err));
 
-        // 2. Send notification email to Dvir
-        await window.emailjs.send('service_ne5z4wv', 'template_sl4n308', {
-          to_email: 'dvir@onstaffai.com',
-          to_name: 'דביר, נכנס ליד חדש!',
-          onboard_url: onboardUrl,
-          onboarding_link: `פרטי הליד:\nשם: ${data.fullName}\nחברה: ${data.company}\nטלפון: ${data.phone}\nאימייל: ${data.email}\nמסלול: ${selectedPlan}\nסוכנים: ${selectedAgents.join(',')}\n\nקישור הקמה: ${onboardUrl}`
-        }).catch(err => console.error("EmailJS Dvir email error:", err));
+      // 2. Send notification email to Dvir
+      await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          service_id: 'service_ne5z4wv',
+          template_id: 'template_sl4n308',
+          user_id: '7IoARO-EcljLAzrok',
+          accessToken: 'qrDC3NWZhEoUpR_zFfFnC',
+          template_params: {
+            to_email: 'dvir@onstaffai.com',
+            to_name: 'דביר, נכנס ליד חדש!',
+            onboard_url: onboardUrl,
+            onboarding_link: `פרטי הליד:\nשם: ${data.fullName}\nחברה: ${data.company || 'לא צוין'}\nטלפון: ${data.phone}\nאימייל: ${data.email}\nמסלול: ${selectedPlan || 'לא נבחר'}\nסוכנים: ${selectedAgents.join(',') || 'לא נבחרו'}\n\nקישור הקמה: ${onboardUrl}`
+          }
+        })
+      }).catch(err => console.error("EmailJS Dvir email error:", err));
 
-        // 3. Send notification email to Daniel
-        await window.emailjs.send('service_ne5z4wv', 'template_sl4n308', {
-          to_email: 'daniel@onstaffai.com',
-          to_name: 'דניאל, נכנס ליד חדש!',
-          onboard_url: onboardUrl,
-          onboarding_link: `פרטי הליד:\nשם: ${data.fullName}\nחברה: ${data.company}\nטלפון: ${data.phone}\nאימייל: ${data.email}\nמסלול: ${selectedPlan}\nסוכנים: ${selectedAgents.join(',')}\n\nקישור הקמה: ${onboardUrl}`
-        }).catch(err => console.error("EmailJS Daniel email error:", err));
-      }
+      // 3. Send notification email to Daniel
+      await fetch('https://api.emailjs.com/api/v1.0/email/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          service_id: 'service_ne5z4wv',
+          template_id: 'template_sl4n308',
+          user_id: '7IoARO-EcljLAzrok',
+          accessToken: 'qrDC3NWZhEoUpR_zFfFnC',
+          template_params: {
+            to_email: 'daniel@onstaffai.com',
+            to_name: 'דניאל, נכנס ליד חדש!',
+            onboard_url: onboardUrl,
+            onboarding_link: `פרטי הליד:\nשם: ${data.fullName}\nחברה: ${data.company || 'לא צוין'}\nטלפון: ${data.phone}\nאימייל: ${data.email}\nמסלול: ${selectedPlan || 'לא נבחר'}\nסוכנים: ${selectedAgents.join(',') || 'לא נבחרו'}\n\nקישור הקמה: ${onboardUrl}`
+          }
+        })
+      }).catch(err => console.error("EmailJS Daniel email error:", err));
 
       // Track successful contact us form submission in Google Analytics
       if (typeof gtag === 'function') {
@@ -113,7 +137,6 @@ const ContactForm = ({ lang }) => {
 
       setStatus('success');
       e.target.reset();
-      setSelectedAgents([]);
     } catch (error) {
       console.error('Error submitting form:', error);
       setStatus('error');
@@ -148,8 +171,8 @@ const ContactForm = ({ lang }) => {
             <input type="text" name="fullName" required style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--line)', background: 'var(--bg-2)', color: 'var(--ink)' }} />
           </div>
           <div>
-            <label style={{ display: 'block', marginBottom: '8px', color: 'var(--ink)' }}>{isHe ? 'שם חברה *' : 'Company Name *'}</label>
-            <input type="text" name="company" required style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--line)', background: 'var(--bg-2)', color: 'var(--ink)' }} />
+            <label style={{ display: 'block', marginBottom: '8px', color: 'var(--ink)' }}>{isHe ? 'שם חברה' : 'Company Name'}</label>
+            <input type="text" name="company" style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--line)', background: 'var(--bg-2)', color: 'var(--ink)' }} />
           </div>
           <div>
             <label style={{ display: 'block', marginBottom: '8px', color: 'var(--ink)' }}>{isHe ? 'טלפון *' : 'Phone *'}</label>
@@ -158,32 +181,6 @@ const ContactForm = ({ lang }) => {
           <div>
             <label style={{ display: 'block', marginBottom: '8px', color: 'var(--ink)' }}>{isHe ? 'דוא"ל *' : 'Email *'}</label>
             <input type="email" name="email" required style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--line)', background: 'var(--bg-2)', color: 'var(--ink)' }} />
-          </div>
-
-          <div style={{ marginTop: '10px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', color: 'var(--ink)' }}>
-              {isHe ? 'כמה סוכנים תרצו להפעיל? ' : 'How many agents do you need? '}
-              <span style={{color:'var(--primary, #ea580c)', fontSize:'12px'}}>{isHe ? '(לא חובה, אך יעזור לנו להתאים עבורך את השירות)' : '(Optional)'}</span>
-            </label>
-            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-              {['1', '2-3', '4-6', '7+'].map(agentCount => (
-                <div key={agentCount} onClick={() => toggleAgent(agentCount)} style={{ cursor: 'pointer', padding: '8px 16px', borderRadius: '20px', border: '1px solid var(--line)', background: selectedAgents.includes(agentCount) ? 'var(--primary, #ea580c)' : 'var(--bg-2)', color: selectedAgents.includes(agentCount) ? '#fff' : 'var(--ink)', transition: 'all 0.2s', fontSize: '14px' }}>
-                  {agentCount}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div style={{ marginTop: '10px' }}>
-            <label style={{ display: 'block', marginBottom: '8px', color: 'var(--ink)' }}>
-              {isHe ? 'באיזה מסלול אתם מעוניינים? ' : 'Which plan are you interested in? '}
-              <span style={{color:'var(--primary, #ea580c)', fontSize:'12px'}}>{isHe ? '(לא חובה)' : '(Optional)'}</span>
-            </label>
-            <select value={selectedPlan} onChange={e => setSelectedPlan(e.target.value)} style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid var(--line)', background: 'var(--bg-2)', color: 'var(--ink)', appearance: 'auto' }}>
-              <option value="starter">{isHe ? 'Starter - ₪490' : 'Starter - ₪490'}</option>
-              <option value="growth">{isHe ? 'Growth - ₪990' : 'Growth - ₪990'}</option>
-              <option value="business">{isHe ? 'Business - ₪1990' : 'Business - ₪1990'}</option>
-            </select>
           </div>
           
           <style>{`
