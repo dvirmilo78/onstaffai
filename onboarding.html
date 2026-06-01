@@ -276,7 +276,7 @@
         import { getFirestore, doc, updateDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
 
         const firebaseConfig = {
-            apiKey: "AIzaSyBExample-ReplaceWithYourKey",
+            apiKey: "AIzaSyD8bNj7KimdgkZ8rKyd4DACwHWGtbFBpTM",
             authDomain: "onstaffai.firebaseapp.com",
             projectId: "onstaffai"
         };
@@ -489,15 +489,26 @@
             if (leadId && window._db && window._updateDoc && window._doc) {
                 try {
                     const docRef = window._doc(window._db, 'leads', leadId);
-                    await window._updateDoc(docRef, {
+                    const updateData = {
                         step: currentStep + 1,
                         lastActivity: window._serverTimestamp ? window._serverTimestamp() : new Date().toISOString()
-                    });
+                    };
+                    
+                    // Save company details if completing step 1
+                    if (currentStep === 1) {
+                        const compVal = document.getElementById('ob-company').value.trim();
+                        const compNumVal = document.getElementById('ob-company-num').value.trim();
+                        if (compVal) updateData.company = compVal;
+                        if (compNumVal) updateData.companyNum = compNumVal;
+                    }
+
+                    await window._updateDoc(docRef, updateData);
                     
                     // Send step completion email via EmailJS
                     if (EMAILJS_PUBLIC_KEY !== 'YOUR_PUBLIC_KEY') {
                         emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_STEP, {
                             to_email: document.getElementById('ob-email').value,
+                            email: document.getElementById('ob-email').value,
                             to_name: document.getElementById('ob-name').value,
                             completed_step: currentStep,
                             next_step: currentStep + 1

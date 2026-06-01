@@ -71,6 +71,7 @@ const ContactForm = ({ lang }) => {
         // 1. Send onboarding email to the client
         window.emailjs.send('service_ne5z4wv', 'template_sl4n308', {
           to_email: data.email,
+          email: data.email,
           to_name: data.fullName,
           onboard_url: onboardUrl,
           onboarding_link: onboardUrl
@@ -79,6 +80,7 @@ const ContactForm = ({ lang }) => {
         // 2. Send notification email to Dvir
         window.emailjs.send('service_ne5z4wv', 'template_sl4n308', {
           to_email: 'dvir@onstaffai.com',
+          email: 'dvir@onstaffai.com',
           to_name: 'דביר, נכנס ליד חדש!',
           onboard_url: onboardUrl,
           onboarding_link: `פרטי הליד:\nשם: ${data.fullName}\nחברה: ${data.company || 'לא צוין'}\nטלפון: ${data.phone}\nאימייל: ${data.email}\nמסלול: ${selectedPlan || 'לא נבחר'}\nסוכנים: ${selectedAgents.join(',') || 'לא נבחרו'}\n\nקישור הקמה: ${onboardUrl}`
@@ -87,6 +89,7 @@ const ContactForm = ({ lang }) => {
         // 3. Send notification email to Daniel
         window.emailjs.send('service_ne5z4wv', 'template_sl4n308', {
           to_email: 'daniel@onstaffai.com',
+          email: 'daniel@onstaffai.com',
           to_name: 'דניאל, נכנס ליד חדש!',
           onboard_url: onboardUrl,
           onboarding_link: `פרטי הליד:\nשם: ${data.fullName}\nחברה: ${data.company || 'לא צוין'}\nטלפון: ${data.phone}\nאימייל: ${data.email}\nמסלול: ${selectedPlan || 'לא נבחר'}\nסוכנים: ${selectedAgents.join(',') || 'לא נבחרו'}\n\nקישור הקמה: ${onboardUrl}`
