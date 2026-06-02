@@ -913,16 +913,17 @@
                     <div class="card-header">
                         <div class="card-icon"><i class="ph ph-chat-circle-dots"></i></div>
                     </div>
-                    <div class="card-title">סה"כ שיחות החודש</div>
+                    <div class="card-title">סה"כ שיחות</div>
                     <div class="card-value" id="dashTotalChats">...</div>
-                    <div style="color: var(--text-secondary); font-size: 12px; margin-top: 8px;">מתחילת החודש הנוכחי</div>
+                    <div style="color: var(--text-secondary); font-size: 12px; margin-top: 8px;">כמות שיחות ייחודיות</div>
                 </div>
                 <div class="card">
                     <div class="card-header">
-                        <div class="card-icon" style="background: rgba(16, 185, 129, 0.1); color: #10b981;"><i class="ph ph-calendar-check"></i></div>
+                        <div class="card-icon" style="background: rgba(99, 102, 241, 0.1); color: #6366f1;"><i class="ph ph-chat-circle-text"></i></div>
                     </div>
-                    <div class="card-title">פגישות שתואמו (Calendly)</div>
-                    <div class="card-value">-</div>
+                    <div class="card-title">סה"כ אינטראקציות</div>
+                    <div class="card-value" id="dashTotalInteractions">...</div>
+                    <div style="color: var(--text-secondary); font-size: 12px; margin-top: 8px;">הודעות שנשלחו והתקבלו</div>
                 </div>
                 <div class="card">
                     <div class="card-header">
@@ -1727,10 +1728,20 @@
                 // Fetch Total Chats
                 const sessionsRef = window._db.collection('agentSessions').where('clientKey', '==', cId);
                 const snapshot = await sessionsRef.get();
-                if (snapshot.size === 0) {
+                
+                let totalChats = snapshot.size;
+                let totalInteractions = 0;
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    totalInteractions += (data.messageCount || 0);
+                });
+
+                if (totalChats === 0) {
                     document.getElementById('dashTotalChats').innerHTML = '<span style="font-size:20px;">אין נתוני שימוש במערכת</span>';
+                    document.getElementById('dashTotalInteractions').textContent = '0';
                 } else {
-                    document.getElementById('dashTotalChats').textContent = snapshot.size;
+                    document.getElementById('dashTotalChats').textContent = totalChats;
+                    document.getElementById('dashTotalInteractions').textContent = totalInteractions;
                 }
 
                 // Fetch company document for agents list
@@ -1796,6 +1807,9 @@
             } catch(e) {
                 console.error("Dashboard load error", e);
                 document.getElementById('dashTotalChats').textContent = 'שגיאה';
+                if (document.getElementById('dashTotalInteractions')) {
+                    document.getElementById('dashTotalInteractions').textContent = 'שגיאה';
+                }
                 document.getElementById('dashRecentChatsBody').innerHTML = '<tr><td colspan="4" style="text-align:center;color:red;padding:20px;">שגיאה בטעינת נתונים: ' + e.message + '</td></tr>';
             }
         }

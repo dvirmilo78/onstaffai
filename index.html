@@ -228,15 +228,19 @@ document.addEventListener('DOMContentLoaded', async function() {
       wrap.id = 'onstaff-chat-frame-wrap';
       var iframe = document.createElement('iframe');
       iframe.id = 'onstaff-chat-frame';
-      iframe.src = 'chat.html?agent=customer-service&_t=' + Date.now();
       iframe.title = '\u05e9\u05d9\u05d7\u05d4 \u05e2\u05dd \u05de\u05d0\u05d9\u05d4';
       iframe.allow = 'microphone';
       wrap.appendChild(iframe);
       document.body.appendChild(wrap);
 
       var isOpen = false;
+      var iframeInited = false;
       btn.addEventListener('click', function() {
         isOpen = !isOpen;
+        if (isOpen && !iframeInited) {
+          iframe.src = 'chat.html?agent=customer-service&_t=' + Date.now();
+          iframeInited = true;
+        }
         wrap.style.display = isOpen ? 'flex' : 'none';
         bubble.style.display = isOpen ? 'none' : '';
       });

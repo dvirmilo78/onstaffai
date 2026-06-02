@@ -988,12 +988,17 @@
 
         <!-- ══ Analytics Section ══ -->
         <section id="analytics" class="section">
-            <div class="header">
+            <div class="header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
                 <div>
                     <h1 style="font-size:1.4rem;"><i class="ph ph-chart-line" style="color:var(--primary-color);"></i> אנליטיקת שימוש בסוכנים</h1>
-                    <p style="color:var(--text-secondary);font-size:13px;‪margin-top:4px;">נתונים בזמן אמת מכל השיחות עם סוכני ה-AI</p>
+                    <p style="color:var(--text-secondary);font-size:13px;margin-top:4px;">נתונים בזמן אמת מכל השיחות עם סוכני ה-AI</p>
                 </div>
-                <button onclick="loadAnalytics()" class="btn" style="gap:6px;"><i class="ph ph-arrows-clockwise"></i> רענן</button>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <select id="analytics-client-filter" onchange="loadAnalytics()" style="padding:8px 12px; border-radius:8px; border:1.5px solid var(--surface-border); background:var(--surface-color); color:var(--text-primary); font-size:13px; outline:none; font-family:inherit;">
+                        <option value="all">כל הלקוחות</option>
+                    </select>
+                    <button onclick="loadAnalytics()" class="btn" style="gap:6px;"><i class="ph ph-arrows-clockwise"></i> רענן</button>
+                </div>
             </div>
 
             <!-- KPI Cards -->
@@ -1835,9 +1840,46 @@
                 return;
             }
 
+            // Populate/sync client filter options
+            var filterEl = document.getElementById('analytics-client-filter');
+            var selectedCid = 'all';
+            if (filterEl) {
+                selectedCid = filterEl.value || 'all';
+                var clientKeys = Object.keys(CLIENTS || {});
+                var currentOptionsCount = filterEl.options.length;
+                if (clientKeys.length > 0 && (currentOptionsCount <= 1 || (currentOptionsCount - 1) !== clientKeys.length)) {
+                    var optionsHtml = '<option value="all">כל הלקוחות</option>';
+                    var sortedClients = Object.entries(CLIENTS).sort(function(a, b) {
+                        var nameA = (a[1].name || a[0]).toLowerCase();
+                        var nameB = (b[1].name || b[0]).toLowerCase();
+                        return nameA.localeCompare(nameB, 'he');
+                    });
+                    sortedClients.forEach(function(entry) {
+                        var cid = entry[0];
+                        var cName = entry[1].name || cid;
+                        optionsHtml += '<option value="' + cid + '">' + cName + '</option>';
+                    });
+                    filterEl.innerHTML = optionsHtml;
+                    if (Array.from(filterEl.options).some(function(opt) { return opt.value === selectedCid; })) {
+                        filterEl.value = selectedCid;
+                    } else {
+                        selectedCid = 'all';
+                        filterEl.value = 'all';
+                    }
+                }
+            }
+
             try {
                 var snap = await db.collection('agentSessions').limit(200).get();
                 var sessions = snap.docs.map(function(d) { return Object.assign({ _id: d.id }, d.data()); });
+
+                // Filter by client if selected
+                if (selectedCid !== 'all') {
+                    sessions = sessions.filter(function(s) {
+                        return s.clientKey === selectedCid;
+                    });
+                }
+
                 // Sort client-side (newest first)
                 sessions.sort(function(a, b) {
                     var ta = a.sessionStart && a.sessionStart.toMillis ? a.sessionStart.toMillis() : 0;
@@ -1850,10 +1892,12 @@
                 var convRate   = total ? Math.round(resolved / total * 100) : 0;
                 var avgDur     = total ? Math.round(sessions.reduce(function(a,s){ return a + (s.duration||0); }, 0) / total) : 0;
                 var avgMsgs    = total ? (sessions.reduce(function(a,s){ return a + (s.messageCount||0); }, 0) / total).toFixed(1) : 0;
+                var totalMsgs  = sessions.reduce(function(a,s){ return a + (s.messageCount||0); }, 0);
 
                 // ── KPI Cards ──
                 var kpiData = [
                     { icon:'ph-chats', label:'סה"כ שיחות', value: total, color:'#3b82f6' },
+                    { icon:'ph-chat-circle-text', label:'סה"כ אינטראקציות', value: totalMsgs, color:'#6366f1' },
                     { icon:'ph-check-circle', label:'המרות מוצלחות', value: resolved, color:'#10b981' },
                     { icon:'ph-percent', label:'אחוז המרה', value: convRate + '%', color:'#f97316' },
                     { icon:'ph-timer', label:'משך ממוצע (שניות)', value: avgDur, color:'#8b5cf6' },
