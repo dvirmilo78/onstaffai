@@ -1121,7 +1121,7 @@
             if (_lcInited) return;
             _lcInited = true;
             var db = window._db;
-            if (!db) { setTimeout(initLiveChats, 600); return; }
+            if (!db) { _lcInited = false; setTimeout(initLiveChats, 600); return; }
             var cId = sessionStorage.getItem('client_auth');
             if (!cId) return;
             _sessionsListener = db.collection('agentSessions')

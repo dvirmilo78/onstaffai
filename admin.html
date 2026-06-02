@@ -2023,15 +2023,6 @@
                     snap.docChanges().forEach(function(ch) {
                         var d = ch.doc.data();
                         
-                        // Strict filter: ONLY allow chats belonging to onstaffai / website AND using internal agents
-                        var isInternalClient = (!d.clientKey || d.clientKey === 'onstaffai' || d.clientKey === 'website');
-                        var validAgents = ['customer-service', 'sales', 'scheduler', 'hr', 'tech-support'];
-                        var isInternalAgent = validAgents.includes(d.agentId);
-
-                        if (!isInternalClient || !isInternalAgent) {
-                            return; // Not an internal chat, ignore it in admin portal
-                        }
-
                         if (ch.type === 'removed') delete _adminSessions[ch.doc.id];
                         else _adminSessions[ch.doc.id] = Object.assign({ _id: ch.doc.id }, d);
                     });
@@ -2048,12 +2039,12 @@
             var list = document.getElementById('admin-sessions-list');
             var statusOrder = { 'awaiting_human': 3, 'human_active': 2, 'active': 1, 'closed': 0 };
             
-            // FILTER ONLY INTERNAL CHATS FOR ADMIN!
-            var internalSessions = Object.values(_adminSessions).filter(function(s) {
-                return (!s.clientKey || s.clientKey === 'onstaffai' || s.clientKey === 'website') && s.status !== 'closed';
+            // Allow admin to see all live chats requiring monitoring/intervention
+            var activeSessions = Object.values(_adminSessions).filter(function(s) {
+                return s.status !== 'closed';
             });
 
-            var sessions = internalSessions.sort(function(a,b) {
+            var sessions = activeSessions.sort(function(a,b) {
                 var tA = a.lastUpdate && a.lastUpdate.toDate ? a.lastUpdate.toDate().getTime() : (a.sessionStart && a.sessionStart.toDate ? a.sessionStart.toDate().getTime() : 0);
                 var tB = b.lastUpdate && b.lastUpdate.toDate ? b.lastUpdate.toDate().getTime() : (b.sessionStart && b.sessionStart.toDate ? b.sessionStart.toDate().getTime() : 0);
                 return tB - tA;
